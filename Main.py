@@ -11,7 +11,7 @@ __doc__        = "Code entry point for DMuffler embedded application"
 
 ## Standard Python libraries
 import time                         # https://docs.python.org/3/library/time.html
-import argparse 		    # https://docs.python.org/3/library/argparse.html
+import argparse 		            # https://docs.python.org/3/library/argparse.html
 import subprocess                   # https://docs.python.org/3/library/subprocess.html
 from subprocess import Popen, PIPE  # https://docs.python.org/3/library/subprocess.html#subprocess.Popen
 from subprocess import check_call   # https://docs.python.org/3/library/subprocess.html#subprocess.check_call
@@ -49,7 +49,7 @@ if __name__ == "__main__":
         peek("DMuffler booting in DEV mode", color="red")
         peek("Install SQLite system wide on Raspberry Pi Compute Module 4 using:", color="yellow")
         peek("sudo apt install sqlite3", color="white")
-	
+
     elif 'TESTING' in args.mode:
         peek("DMuffler booting in TESTING mode", color="red")
         integration_test()

@@ -31,6 +31,10 @@ try:
     # Control and monitor input devices (mouse & keyboard)
     # https://pypi.org/project/pynput/
     from pynput import keyboard
+    # import pyautogui
+
+except ModuleNotFoundError:
+    peek("Python can't find module in sys.path or there was a typo in requirements.txt or import statements above!", color="red")
 
 except ImportError :
     peek("Please verify that .venvDMuffler virtual environment is running, if not run: ", color="red")
@@ -38,8 +42,6 @@ except ImportError :
     peek("pip install -r requirements.txt", color="yellow")
     print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
 
-except ModuleNotFoundError:
-    peek("Python can't find module in sys.path or there was a typo in requirements.txt or import statements above!", color="red")
 
 
 class EngineSoundPitchShifter:
@@ -82,6 +84,53 @@ class EngineSoundPitchShifter:
             EngineSoundPitchShifter.FORD_MUSTANG_GT350: 6
         }
 
+        # Load audio file
+        self.audioFile = baseAudio
+        self.audioTimeSeries, self.sampleRate = librosa.load(self.audioFile)
+
+        # Initialize playback variables
+        self.playing = False
+        self.currentFrame = 0
+        self.pitchFactor = 1.0
+        self.running = True
+
+        # Setup audio stream using sounddevice library
+        self.stream = sd.OutputStream(channels=1, samplerate=self.sampleRate, callback=self.audio_callback)
+
+        # Start the stream
+        self.stream.start()
+
+
+    def audio_callback(self, outdata, frames):
+        if self.playing and self.currentFrame < len(self.audioTimeSeries):
+            # Get chunk of audio
+            chunk = self.audioTimeSeries[self.currentFrame:self.currentFrame + frames]
+
+            # Apply pitch shift
+            if len(chunk) > 0:
+                shifted = librosa.effects.pitch_shift(
+                    chunk,
+                    sr=self.sampleRate,
+                    n_steps=12 * np.log2(self.pitchFactor)
+                )
+
+                # Ensure the output array is the right size
+                if len(shifted) < frames:
+                    shifted = np.pad(shifted, (0, frames - len(shifted)))
+
+                outdata[:] = shifted.reshape(-1, 1)
+                self.currentFrame += frames
+            else:
+                outdata.fill(0)
+        else:
+            outdata.fill(0)
+
+
+    def handle_input(self):
+        # Start keyboard listener
+        with keyboard.Listener(on_press=self.on_press) as listener:
+            listener.join()
+
     def on_keyboard_down_press(self, key):
         try:
             # Space bar controls playback
@@ -116,16 +165,13 @@ class EngineSoundPitchShifter:
     def unit_test(self):
         while(True):
             #self.on_keyboard_down_press(keyboard.Key)
-
-            self.on_keyboard_down_press(keyboard.KeyCode.from_char('up'))
+            #self.on_keyboard_down_press(keyboard.KeyCode.from_char('up'))
             #self.on_keyboard_down_press(keyboard.Key.down)
             #self.on_keyboard_down_press(keyboard.Key.space)
             #self.on_keyboard_down_press(keyboard.Key.esc)
             #self.on_keyboard_down_press(keyboard.KeyCode.from_char('R'))
             time.sleep(1)
-
-    def main(self):
-        pass
+            peek(self.baseAudio)
 
 if __name__ == "__main__":
     teslaModel3 = EngineSoundPitchShifter(EngineSoundPitchShifter.MC_LAREN_F1)

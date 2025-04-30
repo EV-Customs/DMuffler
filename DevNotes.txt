@@ -1,26 +1,20 @@
 Update Raspberry Pi 500 and CM4 to python 3.13
-
 https://chatgpt.com/share/680e6b8a-8ff8-8000-8cf8-d0e9c164d093
 
-Add Pyright to .zed/settings.json
 
-{
-    "pyright": {
-        "pythonVersion": "3.13",
-        "typeCheckingMode": "basic"
-    }
-}
+Update Pyright .zed/settings.json to ignore certain errors like unbound modules
 
-Following code needs to be added to EngineSoundPitchShifter.py little by little after understanding it.
 
-import numpy as np
-import librosa
-import sounddevice as sd
-import threading
-import time
-import pyautogui
-from pynput import keyboard
+(.venvDMuffler)  ~/GitRepos/DMuffler/ [main*] p3 EngineSoundPitchShifter.py
+/Users/earth/GitRepos/DMuffler/EngineSoundPitchShifter.py:89: UserWarning: PySoundFile failed. Trying audioread instead.
+  self.audioTimeSeries, self.sampleRate = librosa.load(self.audioFile)
+/Users/earth/GitRepos/DMuffler/.venvDMuffler/lib/python3.13/site-packages/librosa/core/audio.py:184: FutureWarning: librosa.core.audio.__audioread_load
+	Deprecated as of librosa version 0.10.0.
+	It will be removed in librosa version 1.0.
+  y, sr_native = __audioread_load(path, offset, duration, dtype)
 
+
+Following code needs to be added to EngineSoundPitchShifter.py little by little after understanding it:
 class KeyboardAudioPitchShifter:
     def __init__(self):
         # Load audio file
@@ -43,7 +37,7 @@ class KeyboardAudioPitchShifter:
         # Start the stream
         self.stream.start()
 
-    def audio_callback(self, outdata, frames, time, status):
+    def audio_callback(self, outdata, frames, time, status):              What do time & status do?
         if self.playing and self.current_frame < len(self.y):
             # Get chunk of audio
             chunk = self.y[self.current_frame:self.current_frame + frames]
