@@ -11,6 +11,9 @@ ENV/
 env.bak/
 venv.bak/
 
+# MacOS directory meta data
+.DS_Store
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
