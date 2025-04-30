@@ -1,8 +1,12 @@
+Update Raspberry Pi 500 and CM4 to python 3.13
+
+https://chatgpt.com/share/680e6b8a-8ff8-8000-8cf8-d0e9c164d093
+
 Add Pyright to .zed/settings.json
 
 {
     "pyright": {
-        "pythonVersion": "3.10",
+        "pythonVersion": "3.13",
         "typeCheckingMode": "basic"
     }
 }
