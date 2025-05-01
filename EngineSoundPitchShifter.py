@@ -8,9 +8,14 @@ __version__    = "0.0.1"
 __doc__        = "Create pitch varying audio in real-time on low processing power CPUs"
 """
 
+# Disable PyLint linting messages that seem unuseful
+# https://pypi.org/project/pylint/
+# pylint: disable=invalid-name
+# pylint: disable=global-statement
 
 ## Standard Python libraries
-import time            # https://docs.python.org/3/library/time.html
+from time import sleep # https://docs.python.org/3/library/time.html
+import os              # https://docs.python.org/3/library/os.html
 import threading       # https://docs.python.org/3/library/threading.html
 
 ## 3rd party libraries
@@ -31,7 +36,7 @@ try:
     # Control and monitor input devices (mouse & keyboard)
     # https://pypi.org/project/pynput/
     from pynput import keyboard
-    # import pyautogui
+    # import pyautogui or import keyboard
 
 except ModuleNotFoundError:
     peek("Python can't find module in sys.path or there was a typo in requirements.txt or import statements above!", color="red")
@@ -55,6 +60,10 @@ class EngineSoundPitchShifter:
     JAGUAR_E_TYPE_SERIES_1 = "JaguarEtypeSeries1.wav"
     FORD_MODEL_T = "FordModelT.wav"
     FORD_MUSTANG_GT350 = "FordMustangGT350.wav"
+
+    # Global variables for keyboard input (to simulate gas pedal of a vehicle)
+    isWPressed = False
+    isEscPressed = False
 
     def __init__(self, baseAudio):
         """ Constructor to initialize an EngineSoundPitchShifter object
@@ -85,8 +94,10 @@ class EngineSoundPitchShifter:
         }
 
         # Load audio file
-        self.audioFile = baseAudio
-        self.audioTimeSeries, self.sampleRate = librosa.load(self.audioFile)
+        self.audioFilename = baseAudio
+        EngineSoundPitchShifterPyDirectory = os.path.dirname(os.path.abspath(__file__))
+        soundPath = os.path.join(EngineSoundPitchShifterPyDirectory, "static", "sounds", self.audioFilename)
+        self.audioTimeSeries, self.sampleRate = librosa.load(soundPath)
 
         # Initialize playback variables
         self.playing = False
@@ -95,13 +106,26 @@ class EngineSoundPitchShifter:
         self.running = True
 
         # Setup audio stream using sounddevice library
-        self.stream = sd.OutputStream(channels=1, samplerate=self.sampleRate, callback=self.audio_callback)
+        try:
+            self.stream = sd.OutputStream(channels=1, samplerate=self.sampleRate, callback=self.audio_callback)
+        except NameError:
+            # Handle the case where sd is not defined
+            peek("Sounddevice object is not defined", color="red")
+
 
         # Start the stream
         self.stream.start()
 
 
-    def audio_callback(self, outdata, frames):
+    def cleanup(self):
+        """Stop the audio stream and release resources"""
+        if hasattr(self, 'stream') and self.stream.active:
+            self.stream.stop()
+            self.stream.close()
+        self.running = False
+
+
+    def audio_callback(self, outdata, frames, time, status):
         if self.playing and self.currentFrame < len(self.audioTimeSeries):
             # Get chunk of audio
             chunk = self.audioTimeSeries[self.currentFrame:self.currentFrame + frames]
@@ -126,53 +150,65 @@ class EngineSoundPitchShifter:
             outdata.fill(0)
 
 
-    def handle_input(self):
-        # Start keyboard listener
-        with keyboard.Listener(on_press=self.on_press) as listener:
-            listener.join()
+    def on_press(self, key):
+        global isWPressed, isEscPressed
 
-    def on_keyboard_down_press(self, key):
         try:
-            # Space bar controls playback
-            if key == keyboard.Key.space:
-                self.playing = not self.playing
-                print(f"Playback: {'Playing' if self.playing else 'Paused'}")
-
-            # Up arrow increases pitch
-            elif key == keyboard.Key.up:
-                self.pitch_factor = min(2.0, self.pitch_factor + 0.1)
-                print(f"Pitch factor: {self.pitch_factor:.1f}")
-
-            # Down arrow decreases pitch
-            elif key == keyboard.Key.down:
-                self.pitch_factor = max(0.5, self.pitch_factor - 0.1)
-                print(f"Pitch factor: {self.pitch_factor:.1f}")
-
-            # R key resets playback
-            elif hasattr(key, 'char') and key.char.upper() == 'R':
-                self.current_frame = 0
-                print("Playback reset")
-
-            # ESC key exits
-            elif key == keyboard.Key.esc:
-                self.running = False
-                return False
-
+            if key.char == 'w':
+                isWPressed = True
+                print("W key pressed, revving engine up")
         except AttributeError:
+            # Special key
             pass
 
 
+    def on_release(self, key):
+        global isWPressed, isEscPressed
+
+        try:
+            if key.char == 'w':
+                isWPressed = False
+                print("W key released, engine RPM's reducing")
+
+        except AttributeError:
+            # Special key
+            pass
+
+    def simulate_gas_pedal(self):
+        global isWPressed, isEscPressed
+
+        while self.running:
+            # Simulate gas pedal with W key
+            if self.isWPressed:
+                # Gradually increase pitch while W is held
+                self.pitchFactor = min(2.0, self.pitchFactor + 0.02)
+            else:
+                # Gradually return to normal pitch when W is released
+                if self.pitchFactor > 1.0:
+                    self.pitchFactor = max(1.0, self.pitchFactor - 0.02)
+
+            sleep(0.01)  # Small 10 ms delay to prevent excessive CPU usage
+
+
     def unit_test(self):
+        """
+        """
+        listener = keyboard.Listener(on_press=self.on_press, on_release=self.on_release)
+        listener.start()
+
+        peek("Keyboard Controls:", color="yellow")
+        peek("Space: Play/Pause", color="white")
+        peek("Up/Down arrows: Adjust pitch", color="white")
+        peek("R: Reset playback", color="white")
+        peek("W: Gas pedal (hold to increase pitch)", color="green")
+        peek("ESC: Exit program", color="red")
+
         while(True):
-            #self.on_keyboard_down_press(keyboard.Key)
-            #self.on_keyboard_down_press(keyboard.KeyCode.from_char('up'))
-            #self.on_keyboard_down_press(keyboard.Key.down)
-            #self.on_keyboard_down_press(keyboard.Key.space)
-            #self.on_keyboard_down_press(keyboard.Key.esc)
-            #self.on_keyboard_down_press(keyboard.KeyCode.from_char('R'))
-            time.sleep(1)
-            peek(self.baseAudio)
+            self.simulate_gas_pedal()
+
 
 if __name__ == "__main__":
     teslaModel3 = EngineSoundPitchShifter(EngineSoundPitchShifter.MC_LAREN_F1)
+    print(teslaModel3.audioFilename)
     teslaModel3.unit_test()
+    teslaModel3.cleanup()
