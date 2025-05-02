@@ -38,15 +38,12 @@ try:
     from pynput import keyboard
     # import pyautogui or import keyboard
 
-except ModuleNotFoundError:
-    peek("Python can't find module in sys.path or there was a typo in requirements.txt or import statements above!", color="red")
-
 except ImportError :
-    peek("Please verify that .venvDMuffler virtual environment is running, if not run: ", color="red")
-    peek("source .venvDMuffler/bin/activate", color="yellow")
-    peek("pip install -r requirements.txt", color="yellow")
-    print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
-
+    print("Python can't find module in sys.path or there maybe a typo in requirements.txt or import statements above!")
+    print("Please verify that .venvDMuffler virtual environment is running, if not run:")
+    print("python3 -m venv .venvDMuffler")
+    print("source .venvDMuffler/bin/activate")
+    print("pip install -r requirements.txt")
 
 
 class EngineSoundPitchShifter:
