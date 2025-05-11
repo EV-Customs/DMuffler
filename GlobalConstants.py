@@ -12,48 +12,32 @@ __doc__        = "Useful global constants for the entire EV Customs DMuffler lib
 # Global print() statement toggle for entire DMuffler library
 DEBUG_STATEMENTS_ON = True
 
-# Vehicle make name CONTSTANTS - Yes these are sorted best to worst :)
-TESLA = 0
-APTERA = 1
-KIA = 2
-RIVIAN = 3
-FORD = 4
-VINFAST = 5
+# Standardized Car Image and Sound Constants
+FORD_MODEL_T_IMG = "static/images/ford_model_t.png"
+FORD_MODEL_T_SOUND = "static/sounds/ford_model_t.wav"
 
-# Vehicle model name CONTSTANTS for vehicle makes above
-MODEL_S = "S"
-MODEL_3 = "3"
-MODEL_X = "X"
-MODEL_Y = "Y"
-CYBER_TRUCK = "C"
-ATV = "TESLA ATV"
-ROADSTER_V2 = "TESLA ROADSTER V2"
-SEMI_TRUCK = "SEMI"
-ALL_TESLAS = "S3XY CARS"    # https://www.quora.com/Why-do-the-Tesla-models-spell-out-S3XY
+FORD_MUSTANG_GT350_IMG = "static/images/ford_mustang_gt350.png"
+FORD_MUSTANG_GT350_SOUND = "static/sounds/ford_mustang_gt350.wav"
 
-MODEL_ = "SURYA"            #TODO Once model name is made public by Aptera Motors
+JAGUAR_E_TYPE_SERIES_1_IMG = "static/images/jaguar_e_type_series_1.png"
+JAGUAR_E_TYPE_SERIES_1_SOUND = "static/sounds/jaguar_e_type_series_1.wav"
 
-R1T = "R1T"
-R1S = "R1S"
+LA_FERRARI_IMG = "static/images/la_ferrari.png"
+LA_FERRARI_SOUND = "static/sounds/la_ferrari.wav"
 
-F150_LIGHTNING = "F-150 LIGHTNING"
-MACH_E = "MACH-E"
+MCLAREN_F1_IMG = "static/images/mclaren_f1.png"
+MCLAREN_F1_SOUND = "static/sounds/mclaren_f1.wav"
 
-EV6 = "EV6"
+PORSCHE_911_IMG = "static/images/porsche_911.png"
+PORSCHE_911_SOUND = "static/sounds/porsche_911.wav"
 
-VF6 = "VF6"
-VF8 = "VF8"
+ORANGE_FERRARI_IMG = "static/images/orange_ferrari.png"
+ORANGE_FERRARI_SOUND = "static/sounds/orange_ferrari.wav"
 
-# Vehicle color CONTSTANTS - ROY G BIV + others
-RED = 0
-ORANGE = 1
-YELLOW = 2
-GREEN = 3
-BLUE = 4
-INDIGO = 5
-VIOLET = 6
-GREY = 7
-WHITE = 8
+PURPLE_BMW_IMG = "static/images/purple_bmw.png"
+PURPLE_BMW_SOUND = "static/sounds/purple_bmw.wav"
+
+# (Other constants remain unchanged below)
 
 # Physical hardware CONTSTANTS
 GO_PEDAL = 0                    # Pedal furthest right in the UK and USA
