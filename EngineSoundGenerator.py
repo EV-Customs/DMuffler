@@ -1,299 +1,112 @@
-#!/usr/bin/env python3
+    #!/usr/bin/env python3
 """
-__author__     = "Blaze Sanders"
-__email__      = "dev@blazesanders.com"
-__license__    = "GPLv3"
-__status__     = "Development
-__deprecated__ = "False"
-__version__    = "0.0.1"
-__doc__        = "Create pitch varying audio of a library of cars in real-time on low processing power CPUs"
+Create pitch varying audio of a library of cars in real-time on low processing power CPUs
 """
 
-## Standard Python libraries
-import time                         # https://docs.python.org/3/library/time.html
-import logging                      # https://docs.python.org/3/library/time.html
-import subprocess                   # https://docs.python.org/3/library/subprocess.html
-from subprocess import Popen, PIPE  # TODO
-from subprocess import check_call   # TODO
-
-
-## 3rd party libraries
-try:
-    # Allow 'dependency-free' playback of .wav audio on Linux, MacOS, & Windows
-    # Often apt install libasound2-dev == yum install alsa-lib-devel is still needed
-    # https://simpleaudio.readthedocs.io/en/latest/
-    import simpleaudio as sa
-
-    #TODO IF simpleaudio DOES NOT WORK
-    # Allow for high-quality sample rate conversion
-    # https://pypi.org/project/samplerate/
-    #import samplerate
-
-    #TODO IF BOTH simpleaudio and samplerate DONT WORK
-    # Allow for playback of .mp3 audio on Linux, MacOS, & Windows
-    # import  pyaudio
-
-    # Custom mp3 editting library base off Marco Arments Smart Speed
-    # http://mpgedit.org/mpgedit/mpeg_format/mpeghdr.htm
-    # TODO from mp3edit import *
-
-except ModuleNotFoundError:
-    print("Audio process library (simpleaudio or TODO) was not pip installed  correctly")
-    print("Please verify that the virutalenv 'TeslaDevEnv' is running using the source command")
-    print("OR if easier for you run the command 'pip install simpleaudio' or TODO")
-
-
-
-except ImportError:  #TODO
-    print("ERROR: The simpleaudio python module didn't import correctly!")
-    executeInstalls = input("Would you like me to *** pip3 install simpleaudio *** for you (Y/N)? ")
-    if(executeInstalls.upper() == "Y" or executeInstalls.upper() == "YES"):
-        check_call("sudo apt install libasound2-dev", shell=True)
-        check_call("pip install simpleaudio", shell=True)
-    else:
-        print("You didn't type Y or YES :)")
-        print("Follow supabase manual install instructions at https://pypi.org/project/supabase/")
-
+import os
+import time
+from logging_utils import log_info, log_warning
+import simpleaudio as sa
 
 class EngineSoundGenerator:
-    """ Acronymn list:
-        ESG = EngineSoundGenerator
+    """
+    Generates and plays engine sounds for a library of cars.
     """
 
-    # ICE car engine sound CONSTANTS
-    MC_LAREN_F1 = "McLarenF1.wav"
-    LA_FERRARI = "LaFerrari.wav"
-    PORCSHE_911 = "Porcshe911.wav"
-    BMW_M4 = "BMW_M4.wav"
-    JAGUAR_E_TYPE_SERIES_1 = "JaguarEtypeSeries1.wav"
-    FORD_MODEL_T = "FordModelT.wav"
-    FORD_MUSTANG_GT350 = "FordMustangGT350.wav"
+    mc_laren_f1 = "mclaren_f1.wav"
+    la_ferrari = "la_ferrari.wav"
+    porcshe_911 = "porcshe_911.wav"
+    bmw_m4 = "bmw_m4.wav"
+    jaguar_e_type_series_1 = "jaguar_e_type_series_1.wav"
+    ford_model_t = "ford_model_t.wav"
+    ford_mustang_gt350 = "ford_mustang_gt350.wav"
 
-    # Debugging CONSTANTS
-    DEBUG_STATEMENTS_ON = True
-
-
-    def unitTest():
-        print("STARTING EngineSoundGenerator.py Unit Test")
-
-        TestObject1 = EngineSoundGenerator(EngineSoundGenerator.MC_LAREN_F1)
-        assert TestObject1.getbaseAudioFilename() == TestObject1.EngineSoundsDict[EngineSoundGenerator.MC_LAREN_F1]
-        playObj = TestObject1.startAudio()
-        time.sleep(1.5)
-        TestObject1.stopAudio(playObj)
-
-        # TestObject2 = EngineSoundGenerator(EngineSoundGenerator.BMW_M4)
-        # assert TestObject2.startAudioLoop
-        # assert TestObject2.stopAudioLoop
-
-        TestObject3 = EngineSoundGenerator(10)
-        playObj = TestObject3.startAudio()
-        time.sleep(1.5)
-        TestObject3.stopAudio(playObj)
-        # assert TestObject3, "Invalid engine sound ID - Please use a global CONSTANT in EngineSoundGenerator.py"
-
-        TestObject4 = EngineSoundGenerator(6.9)
-        assert TestObject4, "Invalid engine sound ID - Please use a global CONSTANT in EngineSoundGenerator.py"
-
-        TestObject5 = EngineSoundGenerator("Ford_F_150.mp3")
-        assert TestObject5, "Invalid engine sound STRING - Please use a global CONSTANT in EngineSoundGenerator.py"
-
-        # TestObject6 = EngineSoundGenerator(EngineSoundGenerator("JaguarEtypeSeries1.wav"))
-        # assert TestObject6
-
-        print("EngineSoundGenerator.py Unit Test COMPLETE")
-
-    def __init__(self, baseAudio):
-        """ Constructor to initialize an EngineSoundGenerator object
-            Defaults to McLaren F1 sound if invalid baseAudio variable is passed
+    def __init__(self, base_audio):
+        """
+        Initialize the EngineSoundGenerator.
 
         Args:
-            self -- Newly created EngineSoundGenerator object
-            baseAudio (str): CONSTANT filename of audio (.wav) file to be played and/or modulated
-
-        Object instance variables:
-            baseAudioFilename (str): Variable set to one of the valid Global CONSTANT sounds  
-            engineSoundsDict (dictionary): A 'Collection' of valid sounds and their IDs
-            engineSoundID (int): Unique ID to let embedded software to communicate with mobile app
-            selectedEngineSoundObject (simpleaudio object): Filepath defined audio clip
-            DebugObject(Debug object): Useful for debugging & data logging
-
-        Returns:
-            New EngineSoundGenerator() object
+            base_audio (str): The filename of the base audio to use.
         """
-
-        EngineSoundLog = logging.getLogger("EngineSound.log")
-        #TODO REMOVE? logging.basicConfig(level=logging.INFO)
-
-        # UPDATE this dictionary, EngineSoundGenerator.py global CONSTANTS,
-        # and the Tes/TesMuffler/Sounds folder to add new engine sounds
-        self.EngineSoundsDict = {
-            EngineSoundGenerator.MC_LAREN_F1: 0,
-            EngineSoundGenerator.LA_FERRARI: 1,
-            EngineSoundGenerator.PORCSHE_911: 2,
-            EngineSoundGenerator.BMW_M4: 3,
-            EngineSoundGenerator.JAGUAR_E_TYPE_SERIES_1: 4,
-            EngineSoundGenerator.FORD_MODEL_T: 5,
-            EngineSoundGenerator.FORD_MUSTANG_GT350: 6
+        self.engine_sounds_dict = {
+            self.mc_laren_f1: 0,
+            self.la_ferrari: 1,
+            self.porcshe_911: 2,
+            self.bmw_m4: 3,
+            self.jaguar_e_type_series_1: 4,
+            self.ford_model_t: 5,
+            self.ford_mustang_gt350: 6
         }
+        self.set_engine_sound(base_audio)
 
-        # Use dictionary lookup to check for valid baseAudio CONSTRUCTOR parameter
-        try:
-<<<<<<< HEAD
-            self.engineSoundID = self.EngineSoundsDict[baseAudio]
-            ##self.filePath = os.path.basename("/Sounds/" + baseAudio)     	#TODO space after "/Sounds/ " ?
-            ##self.EngineSoundWaveObject = sa.WaveObject.from_wave_file(self.filePath)
-            pathEnding = "./Sounds/" + baseAudio
-            self.baseAudioFilename = baseAudio
-            self.EngineSoundWaveObject = sa.WaveObject.from_wave_file(pathEnding)
-            self.DebugObject.Dprint("Engine sound found in dictionary")
-        
-        except NameError:
-            message = "CONSTRUCTOR ERROR: Shutting down program since audio process library is NOT installed")
-            self.DebugObject.Lprint(message)
-            check_call("exit()", shell=True)  #TODO DOES THIS WORK
-  
-=======
-            print(baseAudioFilename)
-            self.engineSoundID = self.EngineSoundsDict[baseAudioFilename]
-            print(self.engineSoundID)
-            pathEnding = "./Sounds/" + baseAudioFilename
+    def start_audio(self):
+        """
+        Play sound once and return the play object.
+        """
+        play_obj = self.engine_sound_wave_object.play()
+        return play_obj
 
-            # https://stackoverflow.com/questions/25672289/failed-to-open-file-file-wav-as-a-wav-due-to-file-does-not-start-with-riff-id
-            self.EngineSoundWaveObject = sa.WaveObject.from_wave_file(pathEnding)
-            EngineSoundLog.debug("Engine sound found in dictionary")
->>>>>>> b15dd0a69ddf2ae0e3525153edcd12ecbc42638b
-        except KeyError:
-            EngineSoundLog.info("CONSTRUCTOR WARNING: You selected an invalid engine sound, defaulting to the McLaren F1")
-            self.engineSoundID = EngineSoundGenerator.MC_LAREN_F1
-            pathEnding = "./Sounds/McLarenF1.wav"
-            self.baseAudioFilename = EngineSoundGenerator.MC_LAREN_F1
-            self.EngineSoundWaveObject = sa.WaveObject.from_wave_file(pathEnding)
+    def start_audio_loop(self):
+        """
+        Play sound in loop forever (blocking).
+        """
+        while True:
+            play_obj = self.engine_sound_wave_object.play()
+            play_obj.wait_done()
 
-    def startAudioLoop(self):
-<<<<<<< HEAD
-        """ Play sound in loop forever
-=======
+    def stop_audio(self, play_obj):
         """
-        Play sound in loop forever
->>>>>>> b15dd0a69ddf2ae0e3525153edcd12ecbc42638b
-        """
-        playObj = self.EngineSoundWaveObject.play()
-        playObj.wait_done()
+        Stop sound playing in last wait_done() function call.
 
-    def startAudio(self):
+        Args:
+            play_obj: The play object.
         """
-        Play sound in loop forever
-        """
-        playObj = self.EngineSoundWaveObject.play()
+        play_obj.stop()
 
-        return playObj
+    def set_engine_sound(self, new_sound):
+        """
+        Change sound configured to play during the next start_audio_loop() function call.
 
-<<<<<<< HEAD
-    def stopAudioLoop(self):
-        """ Stop sound playing during last call to startAudioLoop() function
+        Args:
+            new_sound (str): The filename of the new sound to use.
         """
-        self.EngineSoundWaveObject.stop()
-=======
-    def stopAudio(self, playObj):
-        """
-        Stop sound playing in last wait_done() function call
-        """
-        #stop_obj = self.EngineSoundWaveObject.stop()
-        stop_obj = playObj.stop()
-        #sa.stopall()
->>>>>>> b15dd0a69ddf2ae0e3525153edcd12ecbc42638b
-
-    def adjustPitch(self):
-        """ TODO WILL REQUIRE LIBRARY OTHER THEN SIMPLEAUDIO
-        """
-
-        print("TODO")
-
-<<<<<<< HEAD
-
-    def adjustVolume(self, newLevel):
-        """ TODO
-=======
-    def adjustVolume():
-        """
->>>>>>> b15dd0a69ddf2ae0e3525153edcd12ecbc42638b
-        """
-        if(newLevel == GC.UP):
-        elif(newLevel == GC.DOWN):
-        elif(0 <= newLevel or newLevel <= 100):
-            volume = newLevel
-        elif(100 < newLevel):
-            volume = 100
+        if new_sound in self.engine_sounds_dict:
+            self.engine_sound_id = self.engine_sounds_dict[new_sound]
+            path_ending = os.path.join("./Sounds", new_sound)
+            self.base_audio_filename = new_sound
+            self.engine_sound_wave_object = sa.WaveObject.from_wave_file(path_ending)
+            log_info(f"Engine sound changed to {new_sound}")
         else:
-           self.DebugObject = 
+            log_warning(f"WARNING: New sound '{new_sound}' was NOT set. Keeping sound set to {self.base_audio_filename}")
 
-        print("TODO REMOVE SINCE CAR SHOULD CONTROL VOLUME LEVEL")
-
-<<<<<<< HEAD
-
-    def setNeweSound(self, newSound):
-        """ Change sound configured to play during the next startAudioLoop() function call
-        
-        Args:
-            newSound (str): CONSTANT filename of audio file to be played and/or modulated
-        
-        Returns:
-            NOTHING
+    def get_base_audio_filename(self):
         """
-
-        # Use dictionary lookup to check for valid baseAudio CONSTRUCTOR parameter
-        try:
-            self.engineSoundID = self.EngineSoundsDict[newSound]
-            pathEnding = "./Sounds/" + newSound
-            self.baseAudioFilename = newSound
-            self.EngineSoundWaveObject = sa.WaveObject.from_wave_file(pathEnding)
-            self.DebugObject.Dprint("Engine sound found in dictionary")
-        
-        except KeyError:
-            message = "WARNING: New sound was NOT set. Keeping sound set to ", self.baseAudio
-            self.DebugObject.Lprint(message)
-
-
-    def getBaseAudio(self):
-        """ Determine sound configured to play during the next startAudioLoop() function call
-
-        Args:
-            NONE
-        
-        Returns:
-            A EngineSoundGenerator CONSTANT of engine sound set to play
+        Return the filename of the engine sound set to play.
         """
+        return self.base_audio_filename
 
-        return self.baseAudioFilename
-=======
-    def setbaseAudioFilename(self, newSound):
+    @staticmethod
+    def unit_test():
         """
+        Run the unit test for the EngineSoundGenerator.
         """
+        log_info("STARTING EngineSoundGenerator.py Unit Test")
+        test1 = EngineSoundGenerator(EngineSoundGenerator.mc_laren_f1)
+        assert test1.get_base_audio_filename() == EngineSoundGenerator.mc_laren_f1
+        play_obj = test1.start_audio()
+        time.sleep(1.5)
+        test1.stop_audio(play_obj)
 
-        self.baseAudioFilename = newSound
+        test2 = EngineSoundGenerator("invalid_sound")
+        assert test2.get_base_audio_filename() == EngineSoundGenerator.mc_laren_f1
 
-    def getbaseAudioFilename(self):
-        """
+        test3 = EngineSoundGenerator(EngineSoundGenerator.mc_laren_f1)
+        assert test3.get_base_audio_filename() == EngineSoundGenerator.mc_laren_f1
+        play_obj3 = test3.start_audio()
+        time.sleep(1.5)
+        test3.stop_audio(play_obj3)
 
-        Args:
-            NONE
->>>>>>> b15dd0a69ddf2ae0e3525153edcd12ecbc42638b
+        log_info("All EngineSoundGenerator unit tests passed.")
 
-        Returns:
-
-        """
-        return int(self.engineSoundID)
-
-
-<<<<<<< HEAD
-    try:
-        EngineSoundGenerator.unitTest()
-    
-    except AssertionError as error: #NameError:
-        print("Engine Sound Generator Unit Test failed :(")
-=======
 if __name__ == "__main__":
->>>>>>> b15dd0a69ddf2ae0e3525153edcd12ecbc42638b
-
-    EngineSoundGenerator.unitTest()
+    EngineSoundGenerator.unit_test()
