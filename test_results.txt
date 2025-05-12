@@ -1,0 +1,9 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.11.12, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/barkleesanders/CascadeProjects/DMuffler
+plugins: langsmith-0.3.24, anyio-4.5.2
+collected 4 items
+
+test_image_manifest.py ....                                              [100%]
+
+============================== 4 passed in 0.01s ===============================

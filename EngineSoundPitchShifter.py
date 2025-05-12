@@ -17,6 +17,7 @@ __doc__        = "Create pitch varying audio in real-time on low processing powe
 from time import sleep # https://docs.python.org/3/library/time.html
 import os              # https://docs.python.org/3/library/os.html
 import threading       # https://docs.python.org/3/library/threading.html
+from logging_utils import log_info, log_warning, log_error
 
 ## 3rd party libraries
 try:
@@ -39,18 +40,18 @@ try:
     # import pyautogui or import keyboard
 
 except ImportError :
-    print("Python can't find module in sys.path or there maybe a typo in requirements.txt or import statements above!")
-    print("Please verify that .venvDMuffler virtual environment is running, if not run:")
-    print("python3 -m venv .venvDMuffler")
-    print("source .venvDMuffler/bin/activate")
-    print("pip install -r requirements.txt")
+    log_error("Python can't find module in sys.path or there may be a typo in requirements.txt or import statements above!")
+    log_info("Please verify that .venvDMuffler virtual environment is running, if not run:")
+    log_info("python3 -m venv .venvDMuffler")
+    log_info("source .venvDMuffler/bin/activate")
+    log_info("pip install -r requirements.txt")
 
 
 class EngineSoundPitchShifter:
     # import EngineSoundPitchShifter as ESPS
 
     # Internal Combustion Enginer (ICE) car engine sound CONSTANTS
-    MC_LAREN_F1 = "McLarenF1.wav"
+    MC_LAREN_F1 = "mclaren_f1.wav"
     LA_FERRARI = "LaFerrari.wav"
     PORCSHE_911 = "Porcshe911.wav"
     BMW_M4 = "BMW_M4.wav"
@@ -107,7 +108,7 @@ class EngineSoundPitchShifter:
             self.stream = sd.OutputStream(channels=1, samplerate=self.sampleRate, callback=self.audio_callback)
         except NameError:
             # Handle the case where sd is not defined
-            peek("Sounddevice object is not defined", color="red")
+            log_error("Sounddevice object is not defined")
 
 
         # Start the stream
@@ -153,7 +154,7 @@ class EngineSoundPitchShifter:
         try:
             if key.char == 'w':
                 isWPressed = True
-                print("W key pressed, revving engine up")
+                log_info("W key pressed, revving engine up")
         except AttributeError:
             # Special key
             pass
@@ -165,7 +166,7 @@ class EngineSoundPitchShifter:
         try:
             if key.char == 'w':
                 isWPressed = False
-                print("W key released, engine RPM's reducing")
+                log_info("W key released, engine RPM's reducing")
 
         except AttributeError:
             # Special key
@@ -193,12 +194,12 @@ class EngineSoundPitchShifter:
         listener = keyboard.Listener(on_press=self.on_press, on_release=self.on_release)
         listener.start()
 
-        peek("Keyboard Controls:", color="yellow")
-        peek("Space: Play/Pause", color="white")
-        peek("Up/Down arrows: Adjust pitch", color="white")
-        peek("R: Reset playback", color="white")
-        peek("W: Gas pedal (hold to increase pitch)", color="green")
-        peek("ESC: Exit program", color="red")
+        log_info("Keyboard Controls:")
+        log_info("Space: Play/Pause")
+        log_info("Up/Down arrows: Adjust pitch")
+        log_info("R: Reset playback")
+        log_info("W: Gas pedal (hold to increase pitch)")
+        log_info("ESC: Exit program")
 
         while(True):
             self.simulate_gas_pedal()
@@ -206,6 +207,6 @@ class EngineSoundPitchShifter:
 
 if __name__ == "__main__":
     teslaModel3 = EngineSoundPitchShifter(EngineSoundPitchShifter.MC_LAREN_F1)
-    print(teslaModel3.audioFilename)
+    log_info(f"Loaded audio file: {teslaModel3.audioFilename}")
     teslaModel3.unit_test()
     teslaModel3.cleanup()

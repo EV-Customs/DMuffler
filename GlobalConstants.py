@@ -12,30 +12,72 @@ __doc__        = "Useful global constants for the entire EV Customs DMuffler lib
 # Global print() statement toggle for entire DMuffler library
 DEBUG_STATEMENTS_ON = True
 
-# Standardized Car Image and Sound Constants
-FORD_MODEL_T_IMG = "static/images/ford_model_t.png"
-FORD_MODEL_T_SOUND = "static/sounds/ford_model_t.wav"
+"""
+GlobalConstants.py
 
-FORD_MUSTANG_GT350_IMG = "static/images/ford_mustang_gt350.png"
-FORD_MUSTANG_GT350_SOUND = "static/sounds/ford_mustang_gt350.wav"
+Defines canonical image and sound asset paths for all supported cars in DMuffler.
+All constants are grouped in the CarAsset dataclass for clarity and validation.
+Use validate_assets() at startup to ensure all referenced assets exist.
+"""
 
-JAGUAR_E_TYPE_SERIES_1_IMG = "static/images/jaguar_e_type_series_1.png"
-JAGUAR_E_TYPE_SERIES_1_SOUND = "static/sounds/jaguar_e_type_series_1.wav"
+import os
+from dataclasses import dataclass
+from typing import List
 
-LA_FERRARI_IMG = "static/images/la_ferrari.png"
-LA_FERRARI_SOUND = "static/sounds/la_ferrari.wav"
+@dataclass(frozen=True)
+class CarAsset:
+    name: str  # Canonical car name
+    image: str  # Path to image asset
+    sound: str  # Path to sound asset
 
-MCLAREN_F1_IMG = "static/images/mclaren_f1.png"
-MCLAREN_F1_SOUND = "static/sounds/mclaren_f1.wav"
+# Canonical asset definitions
+CAR_ASSETS: List[CarAsset] = [
+    CarAsset("bmw_m4", "static/images/bmw_m4.png", "static/sounds/bmw_m4.mp3"),
+    CarAsset("ferrari_laferrari", "static/images/ferrari_laferrari.png", "static/sounds/ferrari_laferrari.mp3"),
+    CarAsset("ford_model_t", "static/images/ford_model_t.png", "static/sounds/ford_model_t.mp3"),
+    CarAsset("ford_mustang", "static/images/ford_mustang.png", "static/sounds/ford_mustang.mp3"),
+    CarAsset("jaguar_e_type", "static/images/jaguar_e_type.png", "static/sounds/jaguar_e_type.mp3"),
+    CarAsset("mclaren_artura", "static/images/mclaren_artura.png", "static/sounds/mclaren_artura.mp3"),
+    CarAsset("porsche_911", "static/images/porsche_911.png", "static/sounds/porsche_911.mp3"),
+    CarAsset("star_wars_podracer", "static/images/STAR_WARS_PODRACER.png", "static/sounds/STAR_WARS_PODRACER.mp3"),
+    CarAsset("subaru_wrx_sti", "static/images/SUBARU_WRX_STI.png", "static/sounds/SUBARU_WRX_STI.mp3"),
+    CarAsset("tesla_roadster", "static/images/TESLA_ROADSTER.png", "static/sounds/TESLA_ROADSTER.mp3"),
+]
 
-PORSCHE_911_IMG = "static/images/porsche_911.png"
-PORSCHE_911_SOUND = "static/sounds/porsche_911.wav"
+# Legacy flat constants (for backward compatibility)
+bmw_m4_img = "static/images/bmw_m4.png"
+bmw_m4_sound = "static/sounds/bmw_m4.mp3"
+ferrari_laferrari_img = "static/images/ferrari_laferrari.png"
+ferrari_laferrari_sound = "static/sounds/ferrari_laferrari.mp3"
+ford_model_t_img = "static/images/ford_model_t.png"
+ford_model_t_sound = "static/sounds/ford_model_t.mp3"
+ford_mustang_img = "static/images/ford_mustang.png"
+ford_mustang_sound = "static/sounds/ford_mustang.mp3"
+jaguar_e_type_img = "static/images/jaguar_e_type.png"
+jaguar_e_type_sound = "static/sounds/jaguar_e_type.mp3"
+mclaren_artura_img = "static/images/mclaren_artura.png"
+mclaren_artura_sound = "static/sounds/mclaren_artura.mp3"
+porsche_911_img = "static/images/porsche_911.png"
+porsche_911_sound = "static/sounds/porsche_911.mp3"
+star_wars_podracer_img = "static/images/STAR_WARS_PODRACER.png"
+star_wars_podracer_sound = "static/sounds/STAR_WARS_PODRACER.mp3"
+subaru_wrx_sti_img = "static/images/SUBARU_WRX_STI.png"
+subaru_wrx_sti_sound = "static/sounds/SUBARU_WRX_STI.mp3"
+tesla_roadster_img = "static/images/TESLA_ROADSTER.png"
+tesla_roadster_sound = "static/sounds/TESLA_ROADSTER.mp3"
 
-ORANGE_FERRARI_IMG = "static/images/orange_ferrari.png"
-ORANGE_FERRARI_SOUND = "static/sounds/orange_ferrari.wav"
+# Utility: Validate asset existence at startup
+def validate_assets():
+    missing = []
+    for asset in CAR_ASSETS:
+        if not os.path.isfile(asset.image):
+            missing.append(asset.image)
+        if not os.path.isfile(asset.sound):
+            missing.append(asset.sound)
+    if missing:
+        raise FileNotFoundError(f"Missing asset files: {missing}")
 
-PURPLE_BMW_IMG = "static/images/purple_bmw.png"
-PURPLE_BMW_SOUND = "static/sounds/purple_bmw.wav"
+
 
 # (Other constants remain unchanged below)
 
