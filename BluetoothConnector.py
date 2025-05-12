@@ -43,6 +43,16 @@ class ScanDelegate(DefaultDelegate):
         if isNewDev:
             log_info(f"Discovered device: {dev.addr}")
 
+def connect_with_retry(dev, addr_type, retries=3, delay=1):
+    for _ in range(retries):
+        try:
+            peripheral = Peripheral(dev.addr, addr_type)
+            return peripheral
+        except Exception as e:
+            log_error(f"Error connecting to {dev.addr}: {e}")
+            time.sleep(delay)
+    return None
+
 # Scan for devices
 scanner = Scanner().withDelegate(ScanDelegate())
 devices = scanner.scan(10.0)
@@ -58,25 +68,17 @@ for dev in devices:
         log_info("Found iPhone!")
 
 if iphone_dev:
-    try:
-        log_info(f"Connecting to {iphone_dev.addr}...")
-        peripheral = Peripheral(iphone_dev.addr, iphone_dev.addrType)
-
-        # Discover services
-        services = peripheral.getServices()
-        for service in services:
-            log_info(f"Service: {service.uuid}")
-            characteristics = service.getCharacteristics()
-            for char in characteristics:
-                log_info(f"  Characteristic: {char.uuid}")
-
-        # You would need to know the specific UUID of the characteristic to read or write
-        # Example (you'll need to replace with a valid UUID):
-        # char = peripheral.getCharacteristics(uuid="UUID")[0]
-        # char.write(bytes("Hello from Pi", "utf-8"))
-
-        peripheral.disconnect()
-    except Exception as e:
-        log_error(f"Error: {e}")
+    log_info(f"Connecting to {iphone_dev.addr}...")
+    peripheral = connect_with_retry(iphone_dev, iphone_dev.addrType)
+    if peripheral:
+        try:
+            # Discover services
+            services = peripheral.getServices()
+        except Exception as e:
+            log_error(f"Error: {e}")
+        finally:
+            peripheral.disconnect()
+    else:
+        log_warning("Failed to connect to iPhone")
 else:
     log_warning("iPhone not found")

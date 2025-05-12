@@ -9,6 +9,10 @@ __version__    = "0.0.1"
 __doc__        = "Useful global constants for the entire EV Customs DMuffler library"
 """
 
+import os
+from dataclasses import dataclass
+from typing import List
+
 # Global print() statement toggle for entire DMuffler library
 DEBUG_STATEMENTS_ON = True
 
@@ -19,10 +23,6 @@ Defines canonical image and sound asset paths for all supported cars in DMuffler
 All constants are grouped in the CarAsset dataclass for clarity and validation.
 Use validate_assets() at startup to ensure all referenced assets exist.
 """
-
-import os
-from dataclasses import dataclass
-from typing import List
 
 @dataclass(frozen=True)
 class CarAsset:
@@ -77,9 +77,6 @@ def validate_assets():
     if missing:
         raise FileNotFoundError(f"Missing asset files: {missing}")
 
-
-
-# (Other constants remain unchanged below)
 
 # Physical hardware CONTSTANTS
 GO_PEDAL = 0                    # Pedal furthest right in the UK and USA

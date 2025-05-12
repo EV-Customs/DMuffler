@@ -10,11 +10,7 @@ __doc__        = "Code entry point for DMuffler embedded application"
 """
 
 ## Standard Python libraries
-import time                         # https://docs.python.org/3/library/time.html
 import argparse 		            # https://docs.python.org/3/library/argparse.html
-import subprocess                   # https://docs.python.org/3/library/subprocess.html
-from subprocess import Popen, PIPE  # https://docs.python.org/3/library/subprocess.html#subprocess.Popen
-from subprocess import check_call   # https://docs.python.org/3/library/subprocess.html#subprocess.check_call
 
 ## 3rd party libraries
 # Peek makes printing debug information easy and adds basic benchmarking functionality (see https://salabim.org/peek)
@@ -23,7 +19,6 @@ import peek
 
 ## Internal libraries
 #TODO from EngineSoundGenerator import *
-import GlobalConstants as GC
 
 
 def integration_test():

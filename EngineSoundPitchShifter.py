@@ -16,15 +16,10 @@ __doc__        = "Create pitch varying audio in real-time on low processing powe
 ## Standard Python libraries
 from time import sleep # https://docs.python.org/3/library/time.html
 import os              # https://docs.python.org/3/library/os.html
-import threading       # https://docs.python.org/3/library/threading.html
-from logging_utils import log_info, log_warning, log_error
+from logging_utils import log_info, log_error
 
 ## 3rd party libraries
 try:
-    # Peek makes printing debug information easy and adds basic benchmarking functionality (see https://salabim.org/peek)
-    # pip install peek-python
-    import peek
-
     # Audio analysis, with building blocks necessary to create music information retrieval systems
     # https://librosa.org/doc/latest/index.html
     import librosa
@@ -40,7 +35,7 @@ try:
     # import pyautogui or import keyboard
 
 except ImportError :
-    log_error("Python can't find module in sys.path or there may be a typo in requirements.txt or import statements above!")
+    log_error("Python can't find module in sys.path or requirements.txt or import statements above!")
     log_info("Please verify that .venvDMuffler virtual environment is running, if not run:")
     log_info("python3 -m venv .venvDMuffler")
     log_info("source .venvDMuffler/bin/activate")
