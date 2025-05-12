@@ -1,0 +1,5 @@
+[models]
+main = DeepSeek-V3-0324
+
+[api]
+provider = taskmaster

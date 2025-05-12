@@ -18,6 +18,48 @@ Python APIs project is exploring: <br>
 5) TODO https://teslascope.com/
 <br>
 
+Usage Examples
+-------------
+
+### Connect with Retry
+
+The `connect_with_retry` function can be used to establish a connection to a device with retry mechanism. Here is an example usage:
+
+```python
+import time
+
+# Attempt to connect to the device with a maximum of 5 retries and a 1-second delay between retries
+device = connect_with_retry(max_retries=5, delay=1)
+
+if device:
+    print("Connected to the device successfully")
+else:
+    print("Failed to connect to the device after 5 retries")
+```
+
+### Example Pitch Shift
+
+The `example_pitch_shift` function can be used to shift the pitch of an audio signal. Here is an example usage:
+
+```python
+import numpy as np
+
+# Generate a sample audio signal
+sample_rate = 44100
+frequency = 440  # Hz
+duration = 1  # second
+t = np.linspace(0, duration, int(sample_rate * duration), False)
+note = np.sin(frequency * t * 2 * np.pi)
+
+# Shift the pitch of the audio signal by 2 semitones
+shifted_note = example_pitch_shift(note, sample_rate, 2)
+
+# Play the shifted audio signal
+import sounddevice as sd
+sd.play(shifted_note, sample_rate)
+sd.wait()
+```
+
 Next steps: <br>
 Download the following sounds using “youtube-dl —extract-audio —audio-format mp3 http://videoURL” linux command
 1) [McLaren F1](www.youtube.com/watch?v=mOI8GWoMF4M) <br>
