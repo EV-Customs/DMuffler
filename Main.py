@@ -9,32 +9,51 @@ __version__    = "2025.0"
 __doc__        = "Code entry point for DMuffler embedded application"
 """
 
+# Disable PyLint linting messages
+# https://pypi.org/project/pylint/
+# pylint: disable=line-too-long
+# pylint: disable=invalid-name
+
 ## Standard Python libraries
 import time                         # https://docs.python.org/3/library/time.html
+from datetime import datetime       # https://docs.python.org/3/library/datetime.html
 import argparse 		            # https://docs.python.org/3/library/argparse.html
 import subprocess                   # https://docs.python.org/3/library/subprocess.html
 from subprocess import Popen, PIPE  # https://docs.python.org/3/library/subprocess.html#subprocess.Popen
 from subprocess import check_call   # https://docs.python.org/3/library/subprocess.html#subprocess.check_call
 
 ## 3rd party libraries
-# Peek makes printing debug information easy and adds basic benchmarking functionality (see https://salabim.org/peek)
+#
+#
+import sqlite3
+
+# Peek makes printing debug information easy and adds basic benchmarking functionality (See https://salabim.org/peek)
 # pip install peek-python
 import peek
 
-## Internal libraries
-#TODO from EngineSoundGenerator import *
-import GlobalConstants as GC
+# Vehicle Identification Number (VIN) decoder that leverages the NHTSA API (See https://pypi.org/project/pyvin/)
+# https://github.com/arpuffer/pyvin/blob/fa3ce109e7dd322ffd6ce64e1f523bb6fb432456/tests/vin_samples.py#L92
+# pip install pyvin
+from pyvin import VIN
 
+## Internal libraries
+import GlobalConstants as GC
+from Database import Database
+from EngineSoundPitchShifter import EngineSoundPitchShifter as ESPS
+#TODO Fix broken wheel from BluetoothConnector import ScanDelegate
 
 def integration_test():
     """
     https://en.wikipedia.org/wiki/Integration_testing
 
     """
-    pass
+    esps = ESPS(ESPS.MC_LAREN_F1)
+    esps.unit_test()
 
+    #bleConnection = ScanDelegate()
+    #bleConnection.unit_test()
 
-def main():
+def main(db: Database):
     pass
 
 
@@ -45,15 +64,27 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    # Create/connect to a dev database
+    devDB = Database("DMufflerLocalDev.db")
+
+    # Create/connect to a production database
+    db = Database("DMufflerDatabase.db") #TODO: Turo Online Database
+
     if 'DEV' in args.mode:
-        peek("DMuffler booting in DEV mode", color="red")
-        peek("Install SQLite system wide on Raspberry Pi Compute Module 4 using:", color="yellow")
-        peek("sudo apt install sqlite3", color="white")
+        peek.peek("DMuffler booting in DEV mode", color="red")
+        firstName = input("Please enter first name to add new user: ")
+        vin = input("Please enter VIN to add vehicle to an existing user: ") #https://vpic.nhtsa.dot.gov/api/
+        color = input("Please enter the color (6 digit HEX code if possible) of vehicle: ")
+        vehicle = VIN(vin.strip().upper())
+        peek(f"Make: {vehicle.Make}, Model: {vehicle.Model}, Year: {vehicle.ModelYear}")
+
+
 
     elif 'TESTING' in args.mode:
         peek("DMuffler booting in TESTING mode", color="red")
-        integration_test()
+        integration_test(devDB)
+
 
     elif 'PRODUCTION' in args.mode:
         peek("DMuffler booting in standard PRODUCTION mode", color="green")
-        main()
+        main(db)

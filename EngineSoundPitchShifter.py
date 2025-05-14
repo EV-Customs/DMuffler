@@ -45,80 +45,64 @@ except ImportError :
     print("source .venvDMuffler/bin/activate")
     print("pip install -r requirements.txt")
 
+## Internal libraries
+import GlobalConstants as GC
 
 class EngineSoundPitchShifter:
-    # import EngineSoundPitchShifter as ESPS
-
-    # Internal Combustion Enginer (ICE) car engine sound CONSTANTS
-    MC_LAREN_F1 = "McLarenF1.wav"
-    LA_FERRARI = "LaFerrari.wav"
-    PORCSHE_911 = "Porcshe911.wav"
-    BMW_M4 = "BMW_M4.wav"
-    JAGUAR_E_TYPE_SERIES_1 = "JaguarEtypeSeries1.wav"
-    FORD_MODEL_T = "FordModelT.wav"
-    FORD_MUSTANG_GT350 = "FordMustangGT350.wav"
 
     # Global variables for keyboard input (to simulate gas pedal of a vehicle)
     isWPressed = False
     isEscPressed = False
 
-    def __init__(self, baseAudio):
+    def __init__(self, baseAudioFilename):
         """ Constructor to initialize an EngineSoundPitchShifter object
             Defaults to McLaren F1 sound, if invalid baseAudio argumnet is passed
 
         Args:
             self: Newly created EngineSoundPitchShifter object
-            baseAudio (str): CONSTANT filename of audio (.wav) file to be played and/or modulated
+            baseAudioFilename (str): CONSTANT from GlobalConstants.py of audio filename (.wav) file to be played and/or modulated
 
         Object instance variables:
-            engineSoundsDict (dictionary): A 'Collection' of valid sounds and their IDs
-            engineSoundID (int): Unique Sound ID to let embedded software communicate with mobile app
-            selectedEngineSoundObject (simpleaudio object): Filepath defined audio clip
+            audioFilepath (str): Relative filepath of baseAudio audio clip
+            audioTimeSeries (numpy.ndarray): Time series of audio data
+            sampleRate (int): Sample rate of audio data
+            playing (Bool): Flag to indicate if audio is currently playing
+            currentFrame (int): Current frame of audio playback
+            pitchFactor (float): Factor to modulate pitch of audio playback
+            running (Bool): Flag to indicate if audio is currently running
+            stream (Stream): Stream object for audio playback
 
         Returns:
             New EngineSoundPitchShifter() object
         """
-
-        # UPDATE this dictionary, EngineSoundPitchShifter.py CONSTANTS, and the DMuffler/Sounds folder to add new ICE sounds
-        self.EngineSoundsDict = {
-            EngineSoundPitchShifter.MC_LAREN_F1: 0,
-            EngineSoundPitchShifter.LA_FERRARI: 1,
-            EngineSoundPitchShifter.PORCSHE_911: 2,
-            EngineSoundPitchShifter.BMW_M4: 3,
-            EngineSoundPitchShifter.JAGUAR_E_TYPE_SERIES_1: 4,
-            EngineSoundPitchShifter.FORD_MODEL_T: 5,
-            EngineSoundPitchShifter.FORD_MUSTANG_GT350: 6
-        }
-
         # Load audio file
-        self.audioFilename = baseAudio
         EngineSoundPitchShifterPyDirectory = os.path.dirname(os.path.abspath(__file__))
-        soundPath = os.path.join(EngineSoundPitchShifterPyDirectory, "static", "sounds", self.audioFilename)
-        self.audioTimeSeries, self.sampleRate = librosa.load(soundPath)
+        self.audioFilepath = os.path.join(EngineSoundPitchShifterPyDirectory, "static", "sounds", baseAudioFilename)
+        self.audioTimeSeries, self.sampleRate = librosa.load(self.soundFilePath)
 
         # Initialize playback variables
         self.playing = False
         self.currentFrame = 0
         self.pitchFactor = 1.0
-        self.running = True
 
         # Setup audio stream using sounddevice library
         try:
             self.stream = sd.OutputStream(channels=1, samplerate=self.sampleRate, callback=self.audio_callback)
         except NameError:
-            # Handle the case where sd is not defined
             peek("Sounddevice object is not defined", color="red")
-
-
-        # Start the stream
-        self.stream.start()
+        else:
+            self.stream.start()
+        finally:
+            self.running = True
 
 
     def cleanup(self):
-        """Stop the audio stream and release resources"""
+        """ Stop the audio stream and release resources
+        """
         if hasattr(self, 'stream') and self.stream.active:
             self.stream.stop()
             self.stream.close()
+
         self.running = False
 
 
@@ -151,9 +135,9 @@ class EngineSoundPitchShifter:
         global isWPressed, isEscPressed
 
         try:
-            if key.char == 'w':
+            if key.char.upper() == 'W':
                 isWPressed = True
-                print("W key pressed, revving engine up")
+                print(" key pressed, revving engine up")
         except AttributeError:
             # Special key
             pass
@@ -163,9 +147,9 @@ class EngineSoundPitchShifter:
         global isWPressed, isEscPressed
 
         try:
-            if key.char == 'w':
+            if key.char.upper() == 'W':
                 isWPressed = False
-                print("W key released, engine RPM's reducing")
+                print(" key released, engine RPM's reducing")
 
         except AttributeError:
             # Special key

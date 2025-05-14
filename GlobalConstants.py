@@ -12,6 +12,27 @@ __doc__        = "Useful global constants for the entire EV Customs DMuffler lib
 # Global print() statement toggle for entire DMuffler library
 DEBUG_STATEMENTS_ON = True
 
+# Internal Combustion Enginer (ICE) car engine sound CONSTANTS
+# UPDATE this dictionary and DMuffler/static/sounds folder to add new ICE sounds
+MC_LAREN_F1 = "McLarenF1.wav"
+LA_FERRARI = "LaFerrari.wav"
+PORCSHE_911 = "Porcshe911.wav"
+BMW_M4 = "BMW_M4.wav"
+JAGUAR_E_TYPE_SERIES_1 = "JaguarEtypeSeries1.wav"
+FORD_MODEL_T = "FordModelT.wav"
+FORD_MUSTANG_GT350 = "FordMustangGT350.wav"
+
+# A 'Collection' of valid sounds filenames and their engineSoundID (int): Unique Sound ID to let embedded software communicate with mobile app
+EngineSoundsDict = {
+    MC_LAREN_F1: 0,
+    LA_FERRARI: 1,
+    PORCSHE_911: 2,
+    BMW_M4: 3,
+    JAGUAR_E_TYPE_SERIES_1: 4,
+    FORD_MODEL_T: 5,
+    FORD_MUSTANG_GT350: 6
+}
+
 # Vehicle make name CONTSTANTS - Yes these are sorted best to worst :)
 TESLA = 0
 APTERA = 1
@@ -82,6 +103,8 @@ MIN_CAN_BUS_TIMESTEP = 0.001    # Units are seconds
 STANDARD_POLLING_RATE = 0.5     # Units are Hertz (0.5 Hz == 33.3 ms)
 COLLECTING_DATA = False         # Software database flag to protect user data
 SECURITY_TOGGLE_PIN = 4         # Hardware GPIO pin number to protect user data at hardware level TODO
+ERROR_LEVEL_LOG = 1
+WARNING_LEVEL_LOG = 2
 
 # Text to Voice Audio CONSTANTS
 FEMALE_ENGLISH_1 = "TODO"               # Used in VoiceGenerator http://www.festvox.org/flite/packed/flite-2.0/voices/
@@ -97,6 +120,9 @@ CENTIMETER_UNITS = "cm"
 
 # Datatbase Table Name & HTTP error code  CONSTANTS
 DATABASE_TABLE_NAMES = ["Users", "Vehicles", "EngineSounds", "TODO"]      #TODO
+USERS_TABLE = 0
+VEHICLES_TABLE = 1
+ENGINE_SOUNDS_TABLE = 2
 DATABASE_OPERATION_FAILED = 400
 DATABASE_OPERATION_SUCCESFULL = 200
 SNAPSHOT_SIZE = 1000                    # OTA Update payload size [0x00] * 1000
