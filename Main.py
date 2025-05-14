@@ -18,9 +18,6 @@ __doc__        = "Code entry point for DMuffler embedded application"
 import time                         # https://docs.python.org/3/library/time.html
 from datetime import datetime       # https://docs.python.org/3/library/datetime.html
 import argparse 		            # https://docs.python.org/3/library/argparse.html
-import subprocess                   # https://docs.python.org/3/library/subprocess.html
-from subprocess import Popen, PIPE  # https://docs.python.org/3/library/subprocess.html#subprocess.Popen
-from subprocess import check_call   # https://docs.python.org/3/library/subprocess.html#subprocess.check_call
 
 ## 3rd party libraries
 #
@@ -36,6 +33,8 @@ import peek
 # pip install pyvin
 from pyvin import VIN
 
+## Internal libraries
+#TODO from EngineSoundGenerator import *
 ## Internal libraries
 import GlobalConstants as GC
 from Database import Database
@@ -57,10 +56,29 @@ def main(db: Database):
     pass
 
 
+def play_external_audio():
+    """
+    Play external audio using a subprocess.
+
+    This function runs a dummy command using subprocess to simulate playing external audio.
+    """
+    subprocess.run(['echo', 'Playing external audio...'])
+
+
+def demo_delay(delay_time):
+    """
+    Pause execution for a specified amount of time.
+
+    Args:
+        delay_time (float): The time in seconds to pause execution.
+    """
+    time.sleep(delay_time)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run DMuffler application in DEV, TESTING, or PRODUCTION mode?")
     parser.add_argument('--mode', nargs='+',choices=['DEV', 'TESTING', 'PRODUCTION'],
-                        help='Configure state of GC.DEBUG_STATEMENTS_ON and wheter intergration_test() or main() is called.')
+                        help='Configure state of GC.DEBUG_STATEMENTS_ON and whether integration_test() or main() is called.')
 
     args = parser.parse_args()
 

@@ -16,14 +16,9 @@ __doc__        = "Create pitch varying audio in real-time on low processing powe
 ## Standard Python libraries
 from time import sleep # https://docs.python.org/3/library/time.html
 import os              # https://docs.python.org/3/library/os.html
-import threading       # https://docs.python.org/3/library/threading.html
 
 ## 3rd party libraries
 try:
-    # Peek makes printing debug information easy and adds basic benchmarking functionality (see https://salabim.org/peek)
-    # pip install peek-python
-    import peek
-
     # Audio analysis, with building blocks necessary to create music information retrieval systems
     # https://librosa.org/doc/latest/index.html
     import librosa
@@ -39,11 +34,7 @@ try:
     # import pyautogui or import keyboard
 
 except ImportError :
-    print("Python can't find module in sys.path or there maybe a typo in requirements.txt or import statements above!")
-    print("Please verify that .venvDMuffler virtual environment is running, if not run:")
-    print("python3 -m venv .venvDMuffler")
-    print("source .venvDMuffler/bin/activate")
-    print("pip install -r requirements.txt")
+
 
 ## Internal libraries
 import GlobalConstants as GC
@@ -89,11 +80,20 @@ class EngineSoundPitchShifter:
         try:
             self.stream = sd.OutputStream(channels=1, samplerate=self.sampleRate, callback=self.audio_callback)
         except NameError:
+<<<<<<< HEAD
             peek("Sounddevice object is not defined", color="red")
         else:
             self.stream.start()
         finally:
             self.running = True
+=======
+            # Handle the case where sd is not defined
+            log_error("Sounddevice object is not defined")
+
+
+        # Start the stream
+        self.stream.start()
+>>>>>>> 283fa5e4d874fdbcfd6f0f631eaf9cbb0afb4603
 
 
     def cleanup(self):
@@ -149,7 +149,6 @@ class EngineSoundPitchShifter:
         try:
             if key.char.upper() == 'W':
                 isWPressed = False
-                print(" key released, engine RPM's reducing")
 
         except AttributeError:
             # Special key
@@ -177,12 +176,7 @@ class EngineSoundPitchShifter:
         listener = keyboard.Listener(on_press=self.on_press, on_release=self.on_release)
         listener.start()
 
-        peek("Keyboard Controls:", color="yellow")
-        peek("Space: Play/Pause", color="white")
-        peek("Up/Down arrows: Adjust pitch", color="white")
-        peek("R: Reset playback", color="white")
-        peek("W: Gas pedal (hold to increase pitch)", color="green")
-        peek("ESC: Exit program", color="red")
+
 
         while(True):
             self.simulate_gas_pedal()
@@ -190,6 +184,5 @@ class EngineSoundPitchShifter:
 
 if __name__ == "__main__":
     teslaModel3 = EngineSoundPitchShifter(EngineSoundPitchShifter.MC_LAREN_F1)
-    print(teslaModel3.audioFilename)
     teslaModel3.unit_test()
     teslaModel3.cleanup()

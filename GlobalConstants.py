@@ -9,9 +9,14 @@ __version__    = "0.0.1"
 __doc__        = "Useful global constants for the entire EV Customs DMuffler library"
 """
 
+import os
+from dataclasses import dataclass
+from typing import List
+
 # Global print() statement toggle for entire DMuffler library
 DEBUG_STATEMENTS_ON = True
 
+<<<<<<< HEAD
 # Internal Combustion Enginer (ICE) car engine sound CONSTANTS
 # UPDATE this dictionary and DMuffler/static/sounds folder to add new ICE sounds
 MC_LAREN_F1 = "McLarenF1.wav"
@@ -40,41 +45,79 @@ KIA = 2
 RIVIAN = 3
 FORD = 4
 VINFAST = 5
+=======
+"""
+GlobalConstants.py
+>>>>>>> 283fa5e4d874fdbcfd6f0f631eaf9cbb0afb4603
 
-# Vehicle model name CONTSTANTS for vehicle makes above
-MODEL_S = "S"
-MODEL_3 = "3"
-MODEL_X = "X"
-MODEL_Y = "Y"
-CYBER_TRUCK = "C"
-ATV = "TESLA ATV"
-ROADSTER_V2 = "TESLA ROADSTER V2"
-SEMI_TRUCK = "SEMI"
-ALL_TESLAS = "S3XY CARS"    # https://www.quora.com/Why-do-the-Tesla-models-spell-out-S3XY
+Defines canonical image and sound asset paths for all supported cars in DMuffler.
+All constants are grouped in the CarAsset dataclass for clarity and validation.
+Use validate_assets() at startup to ensure all referenced assets exist.
+"""
 
-MODEL_ = "SURYA"            #TODO Once model name is made public by Aptera Motors
+@dataclass(frozen=True)
+class CarAsset:
+    name: str  # Canonical car name
+    image: str  # Path to image asset
+    sound: str  # Path to sound asset
 
-R1T = "R1T"
-R1S = "R1S"
+# Canonical asset definitions
+CAR_ASSETS: List[CarAsset] = [
+    CarAsset("bmw_m4", "static/images/bmw_m4.png", "static/sounds/bmw_m4.mp3"),
+    CarAsset("ferrari_laferrari", "static/images/ferrari_laferrari.png", "static/sounds/ferrari_laferrari.mp3"),
+    CarAsset("ford_model_t", "static/images/ford_model_t.png", "static/sounds/ford_model_t.mp3"),
+    CarAsset("ford_mustang", "static/images/ford_mustang.png", "static/sounds/ford_mustang.mp3"),
+    CarAsset("jaguar_e_type", "static/images/jaguar_e_type.png", "static/sounds/jaguar_e_type.mp3"),
+    CarAsset("mclaren_artura", "static/images/mclaren_artura.png", "static/sounds/mclaren_artura.mp3"),
+    CarAsset("porsche_911", "static/images/porsche_911.png", "static/sounds/porsche_911.mp3"),
+    CarAsset("star_wars_podracer", "static/images/STAR_WARS_PODRACER.png", "static/sounds/STAR_WARS_PODRACER.mp3"),
+    CarAsset("subaru_wrx_sti", "static/images/SUBARU_WRX_STI.png", "static/sounds/SUBARU_WRX_STI.mp3"),
+    CarAsset("tesla_roadster", "static/images/TESLA_ROADSTER.png", "static/sounds/TESLA_ROADSTER.mp3"),
+]
 
-F150_LIGHTNING = "F-150 LIGHTNING"
-MACH_E = "MACH-E"
+# Legacy flat constants (for backward compatibility)
+bmw_m4_img = "static/images/bmw_m4.png"
+bmw_m4_sound = "static/sounds/bmw_m4.mp3"
+ferrari_laferrari_img = "static/images/ferrari_laferrari.png"
+ferrari_laferrari_sound = "static/sounds/ferrari_laferrari.mp3"
+ford_model_t_img = "static/images/ford_model_t.png"
+ford_model_t_sound = "static/sounds/ford_model_t.mp3"
+ford_mustang_img = "static/images/ford_mustang.png"
+ford_mustang_sound = "static/sounds/ford_mustang.mp3"
+jaguar_e_type_img = "static/images/jaguar_e_type.png"
+jaguar_e_type_sound = "static/sounds/jaguar_e_type.mp3"
+mclaren_artura_img = "static/images/mclaren_artura.png"
+mclaren_artura_sound = "static/sounds/mclaren_artura.mp3"
+porsche_911_img = "static/images/porsche_911.png"
+porsche_911_sound = "static/sounds/porsche_911.mp3"
+star_wars_podracer_img = "static/images/STAR_WARS_PODRACER.png"
+star_wars_podracer_sound = "static/sounds/STAR_WARS_PODRACER.mp3"
+subaru_wrx_sti_img = "static/images/SUBARU_WRX_STI.png"
+subaru_wrx_sti_sound = "static/sounds/SUBARU_WRX_STI.mp3"
+tesla_roadster_img = "static/images/TESLA_ROADSTER.png"
+tesla_roadster_sound = "static/sounds/TESLA_ROADSTER.mp3"
 
-EV6 = "EV6"
+'''
+    MC_LAREN_F1 = "mclaren_f1.wav"
+    LA_FERRARI = "LaFerrari.wav"
+    PORCSHE_911 = "Porcshe911.wav"
+    BMW_M4 = "BMW_M4.wav"
+    JAGUAR_E_TYPE_SERIES_1 = "JaguarEtypeSeries1.wav"
+    FORD_MODEL_T = "FordModelT.wav"
+    FORD_MUSTANG_GT350 = "FordMustangGT350.wav"
+'''
 
-VF6 = "VF6"
-VF8 = "VF8"
+# Utility: Validate asset existence at startup
+def validate_assets():
+    missing = []
+    for asset in CAR_ASSETS:
+        if not os.path.isfile(asset.image):
+            missing.append(asset.image)
+        if not os.path.isfile(asset.sound):
+            missing.append(asset.sound)
+    if missing:
+        raise FileNotFoundError(f"Missing asset files: {missing}")
 
-# Vehicle color CONTSTANTS - ROY G BIV + others
-RED = 0
-ORANGE = 1
-YELLOW = 2
-GREEN = 3
-BLUE = 4
-INDIGO = 5
-VIOLET = 6
-GREY = 7
-WHITE = 8
 
 # Physical hardware CONTSTANTS
 GO_PEDAL = 0                    # Pedal furthest right in the UK and USA

@@ -1,0 +1,57 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.11.12, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/barkleesanders/CascadeProjects/DMuffler
+plugins: langsmith-0.3.24, anyio-4.5.2, cov-6.1.1
+collected 29 items / 3 errors
+
+==================================== ERRORS ====================================
+_________________ ERROR collecting test_bluetooth_connector.py _________________
+test_bluetooth_connector.py:2: in <module>
+    sys.modules['bluepy'] = MagicMock()
+E   NameError: name 'sys' is not defined
+_____________ ERROR collecting test_engine_sound_pitch_shifter.py ______________
+ImportError while importing test module '/Users/barkleesanders/CascadeProjects/DMuffler/test_engine_sound_pitch_shifter.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/opt/homebrew/Cellar/python@3.11/3.11.12/Frameworks/Python.framework/Versions/3.11/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+test_engine_sound_pitch_shifter.py:3: in <module>
+    from EngineSoundPitchShifter import example_pitch_shift
+E   ImportError: cannot import name 'example_pitch_shift' from 'EngineSoundPitchShifter' (/Users/barkleesanders/CascadeProjects/DMuffler/EngineSoundPitchShifter.py)
+________________________ ERROR collecting test_main.py _________________________
+ImportError while importing test module '/Users/barkleesanders/CascadeProjects/DMuffler/test_main.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/opt/homebrew/Cellar/python@3.11/3.11.12/Frameworks/Python.framework/Versions/3.11/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+test_main.py:3: in <module>
+    from Main import play_external_audio, demo_delay
+Main.py:18: in <module>
+    import peek
+E   ModuleNotFoundError: No module named 'peek'
+================================ tests coverage ================================
+______________ coverage: platform darwin, python 3.11.12-final-0 _______________
+
+Name                                 Stmts   Miss  Cover
+--------------------------------------------------------
+BluetoothConnector.py                   40     40     0%
+EngineSoundGenerator.py                 52     52     0%
+EngineSoundPitchShifter.py              92     63    32%
+GlobalConstants.py                      91      9    90%
+Main.py                                 24     22     8%
+logging_utils.py                        14      2    86%
+test_bluetooth_connector.py             17     15    12%
+test_engine_sound_pitch_shifter.py      11      8    27%
+test_global_constants.py                 9      6    33%
+test_image_manifest.py                  34     17    50%
+test_logging_utils.py                   10      6    40%
+test_main.py                            19     16    16%
+--------------------------------------------------------
+TOTAL                                  413    256    38%
+Coverage XML written to file coverage.xml
+=========================== short test summary info ============================
+ERROR test_bluetooth_connector.py - NameError: name 'sys' is not defined
+ERROR test_engine_sound_pitch_shifter.py
+ERROR test_main.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 3 errors during collection !!!!!!!!!!!!!!!!!!!!
+============================== 3 errors in 0.10s ===============================
