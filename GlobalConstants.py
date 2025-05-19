@@ -16,7 +16,6 @@ from typing import List
 # Global print() statement toggle for entire DMuffler library
 DEBUG_STATEMENTS_ON = True
 
-<<<<<<< HEAD
 # Internal Combustion Enginer (ICE) car engine sound CONSTANTS
 # UPDATE this dictionary and DMuffler/static/sounds folder to add new ICE sounds
 MC_LAREN_F1 = "McLarenF1.wav"
@@ -45,11 +44,8 @@ KIA = 2
 RIVIAN = 3
 FORD = 4
 VINFAST = 5
-=======
-"""
-GlobalConstants.py
->>>>>>> 283fa5e4d874fdbcfd6f0f631eaf9cbb0afb4603
 
+"""
 Defines canonical image and sound asset paths for all supported cars in DMuffler.
 All constants are grouped in the CarAsset dataclass for clarity and validation.
 Use validate_assets() at startup to ensure all referenced assets exist.
