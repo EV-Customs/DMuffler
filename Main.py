@@ -56,25 +56,6 @@ def main(db: Database):
     pass
 
 
-def play_external_audio():
-    """
-    Play external audio using a subprocess.
-
-    This function runs a dummy command using subprocess to simulate playing external audio.
-    """
-    subprocess.run(['echo', 'Playing external audio...'])
-
-
-def demo_delay(delay_time):
-    """
-    Pause execution for a specified amount of time.
-
-    Args:
-        delay_time (float): The time in seconds to pause execution.
-    """
-    time.sleep(delay_time)
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run DMuffler application in DEV, TESTING, or PRODUCTION mode?")
     parser.add_argument('--mode', nargs='+',choices=['DEV', 'TESTING', 'PRODUCTION'],
