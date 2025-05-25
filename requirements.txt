@@ -257,3 +257,4 @@ xxhash==3.5.0
 yarl==1.15.2
 zipp==3.16.2
 zstandard==0.23.0
+PyGithub==2.4.0

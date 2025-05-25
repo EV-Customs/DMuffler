@@ -16,13 +16,11 @@ __doc__        = "Code entry point for DMuffler embedded application"
 
 ## Standard Python libraries
 import time                         # https://docs.python.org/3/library/time.html
-from datetime import datetime       # https://docs.python.org/3/library/datetime.html
 import argparse 		            # https://docs.python.org/3/library/argparse.html
 
 ## 3rd party libraries
 #
 #
-import sqlite3
 
 # Peek makes printing debug information easy and adds basic benchmarking functionality (See https://salabim.org/peek)
 # pip install peek-python
@@ -36,7 +34,6 @@ from pyvin import VIN
 ## Internal libraries
 #TODO from EngineSoundGenerator import *
 ## Internal libraries
-import GlobalConstants as GC
 from Database import Database
 from EngineSoundPitchShifter import EngineSoundPitchShifter as ESPS
 #TODO Fix broken wheel from BluetoothConnector import ScanDelegate

@@ -2,9 +2,7 @@ from unittest.mock import MagicMock
 sys.modules['bluepy'] = MagicMock()
 sys.modules['bluepy.btle'] = MagicMock()
 
-import pytest
 from BluetoothConnector import connect_with_retry
-import sys
 
 def test_connect_with_retry_success():
     mock_peripheral = MagicMock()

@@ -2,21 +2,30 @@
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.hatch.build]
+packages = ["scripts"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["scripts"]
+
 [project]
-name = "DMuffler"
+name = "dependabot-auto-approver"
 version = "0.1.0"
-description = "DMuffler project with windsurf-project standards"
+description = "Automatically approve and merge Dependabot pull requests"
 requires-python = ">=3.8"
+dependencies = [
+    "PyGithub>=2.4.0"
+]
 
 [project.scripts]
-dmuffler = "DMuffler.main:main"
+dependabot-approver = "scripts.approve_dependabot_prs:main"
 
-[project.dependencies]
-bluepy = "^1.3.0"
-peek-python = "^0.0.1"
-pytest = "^7.4.0"
-pytest-cov = "^4.1.0"
-ruff = "^0.1.10"
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "ruff>=0.1.10"
+]
 
 [tool.black]
 line-length = 100
@@ -44,24 +53,21 @@ use_parentheses = true
 ensure_newline_before_comments = true
 
 [tool.pytest.ini_options]
-addopts = "--cov=DMuffler --cov-report=term --cov-report=xml"
-testpaths = ["tests"]
+addopts = "--cov=scripts --cov-report=term --cov-report=xml"
+testpaths = ["scripts"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 
 [tool.ruff]
-all = true
-select = ["E", "F", "I", "B", "C", "Q", "UP"]
-ignore = ["E501"]
-line-length = 100
+# Basic configuration
+select = ["E", "F"]  # pycodestyle and pyflakes
+ignore = ["E501"]    # Ignore line length for now
+fix = true
 
+# Line length
+line-length = 88
+
+# Known first party modules
 [tool.ruff.isort]
-force-sort-within-sections = true
-known-first-party = ["DMuffler"]
-
-[tool.ruff.flake8]
-ignore = ["E501"]
-
-[tool.ruff.format]
-line-length = 100
+known-first-party = ["scripts"]
