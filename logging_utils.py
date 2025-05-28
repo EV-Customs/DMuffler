@@ -15,10 +15,13 @@ if not logger.hasHandlers():
 logger.setLevel(logging.INFO)
 
 def log_info(msg):
+    """Logs an informational message."""
     logger.info(msg)
 
 def log_warning(msg):
+    """Logs a warning message."""
     logger.warning(msg)
 
 def log_error(msg):
+    """Logs an error message."""
     logger.error(msg)

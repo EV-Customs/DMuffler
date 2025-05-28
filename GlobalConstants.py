@@ -17,24 +17,26 @@ from typing import List
 DEBUG_STATEMENTS_ON = True
 
 # Internal Combustion Enginer (ICE) car engine sound CONSTANTS
+# Standardized to lowercase with underscores and .wav extension
 # UPDATE this dictionary and DMuffler/static/sounds folder to add new ICE sounds
-MC_LAREN_F1 = "McLarenF1.wav"
-LA_FERRARI = "LaFerrari.wav"
-PORCSHE_911 = "Porcshe911.wav"
-BMW_M4 = "BMW_M4.wav"
-JAGUAR_E_TYPE_SERIES_1 = "JaguarEtypeSeries1.wav"
-FORD_MODEL_T = "FordModelT.wav"
-FORD_MUSTANG_GT350 = "FordMustangGT350.wav"
+MC_LAREN_F1 = "mc_laren_f1.wav"
+LA_FERRARI = "la_ferrari.wav"
+PORSCHE_911 = "porsche_911.wav" # Corrected typo from PORCSHE to PORSCHE
+BMW_M4 = "bmw_m4.wav"
+JAGUAR_E_TYPE_SERIES_1 = "jaguar_e_type_series_1.wav"
+FORD_MODEL_T = "ford_model_t.wav"
+FORD_MUSTANG_GT350 = "ford_mustang_gt350.wav"
 
 # A 'Collection' of valid sounds filenames and their engineSoundID (int): Unique Sound ID to let embedded software communicate with mobile app
+# Keys are updated to reflect standardized filenames
 EngineSoundsDict = {
-    MC_LAREN_F1: 0,
-    LA_FERRARI: 1,
-    PORCSHE_911: 2,
-    BMW_M4: 3,
-    JAGUAR_E_TYPE_SERIES_1: 4,
-    FORD_MODEL_T: 5,
-    FORD_MUSTANG_GT350: 6
+    MC_LAREN_F1: 0, # "mc_laren_f1.wav": 0
+    LA_FERRARI: 1,  # "la_ferrari.wav": 1
+    PORSCHE_911: 2, # "porsche_911.wav": 2 (Corrected typo)
+    BMW_M4: 3,      # "bmw_m4.wav": 3
+    JAGUAR_E_TYPE_SERIES_1: 4, # "jaguar_e_type_series_1.wav": 4
+    FORD_MODEL_T: 5, # "ford_model_t.wav": 5
+    FORD_MUSTANG_GT350: 6 # "ford_mustang_gt350.wav": 6
 }
 
 # Vehicle make name CONTSTANTS - Yes these are sorted best to worst :)
@@ -59,49 +61,44 @@ class CarAsset:
 
 # Canonical asset definitions
 CAR_ASSETS: List[CarAsset] = [
-    CarAsset("bmw_m4", "static/images/bmw_m4.png", "static/sounds/bmw_m4.mp3"),
-    CarAsset("ferrari_laferrari", "static/images/ferrari_laferrari.png", "static/sounds/ferrari_laferrari.mp3"),
-    CarAsset("ford_model_t", "static/images/ford_model_t.png", "static/sounds/ford_model_t.mp3"),
-    CarAsset("ford_mustang", "static/images/ford_mustang.png", "static/sounds/ford_mustang.mp3"),
-    CarAsset("jaguar_e_type", "static/images/jaguar_e_type.png", "static/sounds/jaguar_e_type.mp3"),
-    CarAsset("mclaren_artura", "static/images/mclaren_artura.png", "static/sounds/mclaren_artura.mp3"),
-    CarAsset("porsche_911", "static/images/porsche_911.png", "static/sounds/porsche_911.mp3"),
-    CarAsset("star_wars_podracer", "static/images/STAR_WARS_PODRACER.png", "static/sounds/STAR_WARS_PODRACER.mp3"),
-    CarAsset("subaru_wrx_sti", "static/images/SUBARU_WRX_STI.png", "static/sounds/SUBARU_WRX_STI.mp3"),
-    CarAsset("tesla_roadster", "static/images/TESLA_ROADSTER.png", "static/sounds/TESLA_ROADSTER.mp3"),
+    CarAsset("bmw_m4", os.path.join("static", "images", "bmw_m4.png"), os.path.join("static", "sounds", "bmw_m4.wav")),
+    CarAsset("ferrari_laferrari", os.path.join("static", "images", "ferrari_laferrari.png"), os.path.join("static", "sounds", "ferrari_laferrari.wav")),
+    CarAsset("ford_model_t", os.path.join("static", "images", "ford_model_t.png"), os.path.join("static", "sounds", "ford_model_t.wav")),
+    CarAsset("ford_mustang", os.path.join("static", "images", "ford_mustang.png"), os.path.join("static", "sounds", "ford_mustang.wav")),
+    CarAsset("jaguar_e_type", os.path.join("static", "images", "jaguar_e_type.png"), os.path.join("static", "sounds", "jaguar_e_type.wav")),
+    CarAsset("mclaren_artura", os.path.join("static", "images", "mclaren_artura.png"), os.path.join("static", "sounds", "mclaren_artura.wav")), # Assuming mclaren_artura is distinct from mc_laren_f1
+    CarAsset("porsche_911", os.path.join("static", "images", "porsche_911.png"), os.path.join("static", "sounds", "porsche_911.wav")),
+    # STAR_WARS_PODRACER, SUBARU_WRX_STI, TESLA_ROADSTER names are uppercase in image/sound filenames. Standardizing to lowercase.
+    CarAsset("star_wars_podracer", os.path.join("static", "images", "star_wars_podracer.png"), os.path.join("static", "sounds", "star_wars_podracer.wav")),
+    CarAsset("subaru_wrx_sti", os.path.join("static", "images", "subaru_wrx_sti.png"), os.path.join("static", "sounds", "subaru_wrx_sti.wav")),
+    CarAsset("tesla_roadster", os.path.join("static", "images", "tesla_roadster.png"), os.path.join("static", "sounds", "tesla_roadster.wav")),
 ]
 
 # Legacy flat constants (for backward compatibility)
-bmw_m4_img = "static/images/bmw_m4.png"
-bmw_m4_sound = "static/sounds/bmw_m4.mp3"
-ferrari_laferrari_img = "static/images/ferrari_laferrari.png"
-ferrari_laferrari_sound = "static/sounds/ferrari_laferrari.mp3"
-ford_model_t_img = "static/images/ford_model_t.png"
-ford_model_t_sound = "static/sounds/ford_model_t.mp3"
-ford_mustang_img = "static/images/ford_mustang.png"
-ford_mustang_sound = "static/sounds/ford_mustang.mp3"
-jaguar_e_type_img = "static/images/jaguar_e_type.png"
-jaguar_e_type_sound = "static/sounds/jaguar_e_type.mp3"
-mclaren_artura_img = "static/images/mclaren_artura.png"
-mclaren_artura_sound = "static/sounds/mclaren_artura.mp3"
-porsche_911_img = "static/images/porsche_911.png"
-porsche_911_sound = "static/sounds/porsche_911.mp3"
-star_wars_podracer_img = "static/images/STAR_WARS_PODRACER.png"
-star_wars_podracer_sound = "static/sounds/STAR_WARS_PODRACER.mp3"
-subaru_wrx_sti_img = "static/images/SUBARU_WRX_STI.png"
-subaru_wrx_sti_sound = "static/sounds/SUBARU_WRX_STI.mp3"
-tesla_roadster_img = "static/images/TESLA_ROADSTER.png"
-tesla_roadster_sound = "static/sounds/TESLA_ROADSTER.mp3"
+# Updated to use os.path.join and .wav for sounds, and standardized filenames for consistency
+bmw_m4_img = os.path.join("static", "images", "bmw_m4.png")
+bmw_m4_sound = os.path.join("static", "sounds", "bmw_m4.wav")
+ferrari_laferrari_img = os.path.join("static", "images", "ferrari_laferrari.png")
+ferrari_laferrari_sound = os.path.join("static", "sounds", "ferrari_laferrari.wav")
+ford_model_t_img = os.path.join("static", "images", "ford_model_t.png")
+ford_model_t_sound = os.path.join("static", "sounds", "ford_model_t.wav")
+ford_mustang_img = os.path.join("static", "images", "ford_mustang.png")
+ford_mustang_sound = os.path.join("static", "sounds", "ford_mustang.wav")
+jaguar_e_type_img = os.path.join("static", "images", "jaguar_e_type.png")
+jaguar_e_type_sound = os.path.join("static", "sounds", "jaguar_e_type.wav")
+mclaren_artura_img = os.path.join("static", "images", "mclaren_artura.png")
+mclaren_artura_sound = os.path.join("static", "sounds", "mclaren_artura.wav")
+porsche_911_img = os.path.join("static", "images", "porsche_911.png")
+porsche_911_sound = os.path.join("static", "sounds", "porsche_911.wav")
+# Standardizing legacy constant names for image/sound files to lowercase
+star_wars_podracer_img = os.path.join("static", "images", "star_wars_podracer.png")
+star_wars_podracer_sound = os.path.join("static", "sounds", "star_wars_podracer.wav")
+subaru_wrx_sti_img = os.path.join("static", "images", "subaru_wrx_sti.png")
+subaru_wrx_sti_sound = os.path.join("static", "sounds", "subaru_wrx_sti.wav")
+tesla_roadster_img = os.path.join("static", "images", "tesla_roadster.png")
+tesla_roadster_sound = os.path.join("static", "sounds", "tesla_roadster.wav")
 
-'''
-    MC_LAREN_F1 = "mclaren_f1.wav"
-    LA_FERRARI = "LaFerrari.wav"
-    PORCSHE_911 = "Porcshe911.wav"
-    BMW_M4 = "BMW_M4.wav"
-    JAGUAR_E_TYPE_SERIES_1 = "JaguarEtypeSeries1.wav"
-    FORD_MODEL_T = "FordModelT.wav"
-    FORD_MUSTANG_GT350 = "FordMustangGT350.wav"
-'''
+# The commented-out block of old sound constants has been removed.
 
 # Utility: Validate asset existence at startup
 def validate_assets():
@@ -189,8 +186,7 @@ PIN16_UNSWITCHED_VEHICLE_BATTERY_POSITIVE = "RED_WIRE"              # 4
 SAE_J1850_PWM = 1
 SAE_J1850_VPW = 2
 
-
-class GlobalConstants:
-
-    if __name__ == "__main__":
-        print("Open GlobalConstants.py to see CONSTANTS used in the EV Customs DMuffler library")
+# The GlobalConstants class definition and its __main__ block have been removed
+# as they were not serving a functional purpose for a constants file.
+# If a specific action is needed when running this file directly,
+# it can be placed at the module level under an if __name__ == "__main__": block.
