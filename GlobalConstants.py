@@ -9,115 +9,70 @@ __version__    = "0.0.1"
 __doc__        = "Useful global constants for the entire EV Customs DMuffler library"
 """
 
-import os
-from dataclasses import dataclass
-from typing import List
+## Standard Python libraries
+import os                           # TODO
+from dataclasses import dataclass   # TODO
+from typing import List             # TODO
 
 # Global print() statement toggle for entire DMuffler library
 DEBUG_STATEMENTS_ON = True
 
-<<<<<<< HEAD
-# Internal Combustion Enginer (ICE) car engine sound CONSTANTS
-# UPDATE this dictionary and DMuffler/static/sounds folder to add new ICE sounds
-MC_LAREN_F1 = "McLarenF1.wav"
-LA_FERRARI = "LaFerrari.wav"
-PORCSHE_911 = "Porcshe911.wav"
-BMW_M4 = "BMW_M4.wav"
-JAGUAR_E_TYPE_SERIES_1 = "JaguarEtypeSeries1.wav"
-FORD_MODEL_T = "FordModelT.wav"
-FORD_MUSTANG_GT350 = "FordMustangGT350.wav"
-
-# A 'Collection' of valid sounds filenames and their engineSoundID (int): Unique Sound ID to let embedded software communicate with mobile app
-EngineSoundsDict = {
-    MC_LAREN_F1: 0,
-    LA_FERRARI: 1,
-    PORCSHE_911: 2,
-    BMW_M4: 3,
-    JAGUAR_E_TYPE_SERIES_1: 4,
-    FORD_MODEL_T: 5,
-    FORD_MUSTANG_GT350: 6
-}
-
-# Vehicle make name CONTSTANTS - Yes these are sorted best to worst :)
-TESLA = 0
-APTERA = 1
-KIA = 2
-RIVIAN = 3
-FORD = 4
-VINFAST = 5
-=======
-"""
-GlobalConstants.py
->>>>>>> 283fa5e4d874fdbcfd6f0f631eaf9cbb0afb4603
-
-Defines canonical image and sound asset paths for all supported cars in DMuffler.
-All constants are grouped in the CarAsset dataclass for clarity and validation.
-Use validate_assets() at startup to ensure all referenced assets exist.
-"""
 
 @dataclass(frozen=True)
-class CarAsset:
-    name: str  # Canonical car name
-    image: str  # Path to image asset
-    sound: str  # Path to sound asset
+class SupportedVehicle:
+    """ Defines supported vehicles that DMuffler app can run inside.
+    """
+    make:  str  # e.g. Ford, Tesla
+    model: str  # e.g. Mustang, Model 3
+    year:  int  # Manufacture Year
 
-# Canonical asset definitions
-CAR_ASSETS: List[CarAsset] = [
-    CarAsset("bmw_m4", "static/images/bmw_m4.png", "static/sounds/bmw_m4.mp3"),
-    CarAsset("ferrari_laferrari", "static/images/ferrari_laferrari.png", "static/sounds/ferrari_laferrari.mp3"),
-    CarAsset("ford_model_t", "static/images/ford_model_t.png", "static/sounds/ford_model_t.mp3"),
-    CarAsset("ford_mustang", "static/images/ford_mustang.png", "static/sounds/ford_mustang.mp3"),
-    CarAsset("jaguar_e_type", "static/images/jaguar_e_type.png", "static/sounds/jaguar_e_type.mp3"),
-    CarAsset("mclaren_artura", "static/images/mclaren_artura.png", "static/sounds/mclaren_artura.mp3"),
-    CarAsset("porsche_911", "static/images/porsche_911.png", "static/sounds/porsche_911.mp3"),
-    CarAsset("star_wars_podracer", "static/images/STAR_WARS_PODRACER.png", "static/sounds/STAR_WARS_PODRACER.mp3"),
-    CarAsset("subaru_wrx_sti", "static/images/SUBARU_WRX_STI.png", "static/sounds/SUBARU_WRX_STI.mp3"),
-    CarAsset("tesla_roadster", "static/images/TESLA_ROADSTER.png", "static/sounds/TESLA_ROADSTER.mp3"),
+# Electrical Vehicle (EV) and hybrid vehicles makes supported by DMuffler
+TESLA = "Tesla"
+APTERA = "Aptera"
+KIA = "Kia"
+RIVIAN = "Rivian"
+FORD = "Ford"
+VINFAST = "VINFAST"
+
+SUPPORTED_VEHICLES: List[SupportedVehicle] = [
+        SupportedVehicle(TESLA, "Model 3",  2023),
+        SupportedVehicle(APTERA, "Atera", 2023),
+        SupportedVehicle(KIA, "Niro", 2023),
+        SupportedVehicle(RIVIAN, "R1T", 2023),
+        SupportedVehicle(FORD, "Mustang Mach-E", 2023),
+        SupportedVehicle(VINFAST, "VF 8", 2023)
 ]
 
-# Legacy flat constants (for backward compatibility)
-bmw_m4_img = "static/images/bmw_m4.png"
-bmw_m4_sound = "static/sounds/bmw_m4.mp3"
-ferrari_laferrari_img = "static/images/ferrari_laferrari.png"
-ferrari_laferrari_sound = "static/sounds/ferrari_laferrari.mp3"
-ford_model_t_img = "static/images/ford_model_t.png"
-ford_model_t_sound = "static/sounds/ford_model_t.mp3"
-ford_mustang_img = "static/images/ford_mustang.png"
-ford_mustang_sound = "static/sounds/ford_mustang.mp3"
-jaguar_e_type_img = "static/images/jaguar_e_type.png"
-jaguar_e_type_sound = "static/sounds/jaguar_e_type.mp3"
-mclaren_artura_img = "static/images/mclaren_artura.png"
-mclaren_artura_sound = "static/sounds/mclaren_artura.mp3"
-porsche_911_img = "static/images/porsche_911.png"
-porsche_911_sound = "static/sounds/porsche_911.mp3"
-star_wars_podracer_img = "static/images/STAR_WARS_PODRACER.png"
-star_wars_podracer_sound = "static/sounds/STAR_WARS_PODRACER.mp3"
-subaru_wrx_sti_img = "static/images/SUBARU_WRX_STI.png"
-subaru_wrx_sti_sound = "static/sounds/SUBARU_WRX_STI.mp3"
-tesla_roadster_img = "static/images/TESLA_ROADSTER.png"
-tesla_roadster_sound = "static/sounds/TESLA_ROADSTER.mp3"
+@dataclass(frozen=True)
+class VehicleAsset:
+    """ Defines canonical image and sound asset paths of all digital vehicles in DMuffler.
+    """
+    engineSoundID: int  # Unique Sound ID to let embedded software communicate with mobile app
+    name: str           # Car name for User Interfaces (UI's)
+    image: str          # Relative file path to .png image assets
+    sound: str          # Relative file path to .wav image assets
 
-'''
-    MC_LAREN_F1 = "mclaren_f1.wav"
-    LA_FERRARI = "LaFerrari.wav"
-    PORCSHE_911 = "Porcshe911.wav"
-    BMW_M4 = "BMW_M4.wav"
-    JAGUAR_E_TYPE_SERIES_1 = "JaguarEtypeSeries1.wav"
-    FORD_MODEL_T = "FordModelT.wav"
-    FORD_MUSTANG_GT350 = "FordMustangGT350.wav"
-'''
+# Internal Combustion Enginer (ICE) car engine sound CONSTANTS
+# UPDATE the following CarAsset List and ../sounds & ../images folders to add new ICE sounds
+MC_LAREN_F1 = 0
+LA_FERRARI = 1
+PORCSHE_911 = 2
+BMW_M4 = 3
+JAGUAR_E_TYPE_SERIES_1 = 4
+FORD_MODEL_T = 5
+FORD_MUSTANG_GT350 = 6
 
-# Utility: Validate asset existence at startup
-def validate_assets():
-    missing = []
-    for asset in CAR_ASSETS:
-        if not os.path.isfile(asset.image):
-            missing.append(asset.image)
-        if not os.path.isfile(asset.sound):
-            missing.append(asset.sound)
-    if missing:
-        raise FileNotFoundError(f"Missing asset files: {missing}")
-
+VEHICLE_ASSETS: List[VehicleAsset] = [
+    VehicleAsset(MC_LAREN_F1, "McLaren F1", "static/images/McLarenF1.png", "static/sounds/McLarenF1.wav"),
+    VehicleAsset(LA_FERRARI, "Ferrari LaFerrari", "static/images/LaFerrari.png", "static/sounds/LaFerrari.wav"),
+    VehicleAsset(PORCSHE_911, "Porsche 911", "static/images/Porsche911.png", "static/sounds/Porsche911.wav"),
+    VehicleAsset(BMW_M4, "BMW M4", "static/images/BMW_M4.png", "static/sounds/BMW_M4.wav"),
+    VehicleAsset(JAGUAR_E_TYPE_SERIES_1, "Jaguar E-Type", "static/images/JaguarEtypeSeries1.png", "static/sounds/JaguarEtypeSeries1.wav"),
+    VehicleAsset(FORD_MODEL_T, "Ford Model T", "static/images/FordModelT.png", "static/sounds/FordModelT.wav"),
+    VehicleAsset(FORD_MUSTANG_GT350, "Ford Mustang GT350", "static/images/FordMustangGT350.png", "static/sounds/FordMustangGT350.wav"),
+    # TODO VehicleAsset("star_wars_podracer", "static/images/STAR_WARS_PODRACER.png", "static/sounds/STAR_WARS_PODRACER.mp3"),
+    # TODO VehicleAsset("subaru_wrx_sti", "static/images/SUBARU_WRX_STI.png", "static/sounds/SUBARU_WRX_STI.mp3"),
+]
 
 # Physical hardware CONTSTANTS
 GO_PEDAL = 0                    # Pedal furthest right in the UK and USA
@@ -161,7 +116,7 @@ PERCENTAGE_UNITS = "%"
 MILLIMETER_UNITS = "mm"
 CENTIMETER_UNITS = "cm"
 
-# Datatbase Table Name & HTTP error code  CONSTANTS
+# Datatbase Table Name & HTTP error code CONSTANTS
 DATABASE_TABLE_NAMES = ["Users", "Vehicles", "EngineSounds", "TODO"]      #TODO
 USERS_TABLE = 0
 VEHICLES_TABLE = 1
@@ -193,8 +148,26 @@ PIN16_UNSWITCHED_VEHICLE_BATTERY_POSITIVE = "RED_WIRE"              # 4
 SAE_J1850_PWM = 1
 SAE_J1850_VPW = 2
 
+# Utility: Validate asset existence at startup
+def validate_assets():
+    """ Validate that sound and images file assets exist
 
-class GlobalConstants:
+    Arg(s):
+        None
 
-    if __name__ == "__main__":
-        print("Open GlobalConstants.py to see CONSTANTS used in the EV Customs DMuffler library")
+    Returns: Nothing
+    """
+    missing = []
+    for asset in VEHICLE_ASSETS:
+        if not os.path.isfile(asset.image):
+            missing.append(asset.image)
+        if not os.path.isfile(asset.sound):
+            missing.append(asset.sound)
+    if missing:
+        raise FileNotFoundError(f"Missing asset files: {missing}")
+
+
+if __name__ == "__main__":
+    print(f"Open GlobalConstants.py to see CONSTANTS like {VEHICLE_ASSETS[BMW_M4].image} used in the EV Customs DMuffler library")
+    validate_assets()
+    print("Successfully exitting GlobalConstants.py")
