@@ -80,21 +80,14 @@ class EngineSoundPitchShifter:
         try:
             self.stream = sd.OutputStream(channels=1, samplerate=self.sampleRate, callback=self.audio_callback)
         except NameError:
-<<<<<<< HEAD
             peek("Sounddevice object is not defined", color="red")
         else:
             self.stream.start()
         finally:
             self.running = True
-=======
-            # Handle the case where sd is not defined
-            log_error("Sounddevice object is not defined")
 
-
-        # Start the stream
-        self.stream.start()
->>>>>>> 283fa5e4d874fdbcfd6f0f631eaf9cbb0afb4603
-
+            # Start the stream
+            self.stream.start()
 
     def cleanup(self):
         """ Stop the audio stream and release resources
@@ -176,13 +169,11 @@ class EngineSoundPitchShifter:
         listener = keyboard.Listener(on_press=self.on_press, on_release=self.on_release)
         listener.start()
 
-
-
         while(True):
             self.simulate_gas_pedal()
 
 
 if __name__ == "__main__":
-    teslaModel3 = EngineSoundPitchShifter(EngineSoundPitchShifter.MC_LAREN_F1)
+    teslaModel3 = EngineSoundPitchShifter(GC.MC_LAREN_F1)
     teslaModel3.unit_test()
     teslaModel3.cleanup()
