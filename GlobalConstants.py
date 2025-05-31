@@ -9,108 +9,70 @@ __version__    = "0.0.1"
 __doc__        = "Useful global constants for the entire EV Customs DMuffler library"
 """
 
-import os
-from dataclasses import dataclass
-from typing import List
+## Standard Python libraries
+import os                           # TODO
+from dataclasses import dataclass   # TODO
+from typing import List             # TODO
 
 # Global print() statement toggle for entire DMuffler library
 DEBUG_STATEMENTS_ON = True
 
-# Internal Combustion Enginer (ICE) car engine sound CONSTANTS
-# Standardized to lowercase with underscores and .wav extension
-# UPDATE this dictionary and DMuffler/static/sounds folder to add new ICE sounds
-MC_LAREN_F1 = "mc_laren_f1.wav"
-LA_FERRARI = "la_ferrari.wav"
-PORSCHE_911 = "porsche_911.wav" # Corrected typo from PORCSHE to PORSCHE
-BMW_M4 = "bmw_m4.wav"
-JAGUAR_E_TYPE_SERIES_1 = "jaguar_e_type_series_1.wav"
-FORD_MODEL_T = "ford_model_t.wav"
-FORD_MUSTANG_GT350 = "ford_mustang_gt350.wav"
-
-# A 'Collection' of valid sounds filenames and their engineSoundID (int): Unique Sound ID to let embedded software communicate with mobile app
-# Keys are updated to reflect standardized filenames
-EngineSoundsDict = {
-    MC_LAREN_F1: 0, # "mc_laren_f1.wav": 0
-    LA_FERRARI: 1,  # "la_ferrari.wav": 1
-    PORSCHE_911: 2, # "porsche_911.wav": 2 (Corrected typo)
-    BMW_M4: 3,      # "bmw_m4.wav": 3
-    JAGUAR_E_TYPE_SERIES_1: 4, # "jaguar_e_type_series_1.wav": 4
-    FORD_MODEL_T: 5, # "ford_model_t.wav": 5
-    FORD_MUSTANG_GT350: 6 # "ford_mustang_gt350.wav": 6
-}
-
-# Vehicle make name CONTSTANTS - Yes these are sorted best to worst :)
-TESLA = 0
-APTERA = 1
-KIA = 2
-RIVIAN = 3
-FORD = 4
-VINFAST = 5
-
-"""
-Defines canonical image and sound asset paths for all supported cars in DMuffler.
-All constants are grouped in the CarAsset dataclass for clarity and validation.
-Use validate_assets() at startup to ensure all referenced assets exist.
-"""
-
 @dataclass(frozen=True)
-class CarAsset:
-    name: str  # Canonical car name
-    image: str  # Path to image asset
-    sound: str  # Path to sound asset
+class SupportedVehicle:
+    """ Defines supported vehicles that DMuffler app can run inside.
+    """
+    make:  str  # e.g. Ford, Tesla
+    model: str  # e.g. Mustang, Model 3
+    year:  int  # Manufacture Year
 
-# Canonical asset definitions
-CAR_ASSETS: List[CarAsset] = [
-    CarAsset("bmw_m4", os.path.join("static", "images", "bmw_m4.png"), os.path.join("static", "sounds", "bmw_m4.wav")),
-    CarAsset("ferrari_laferrari", os.path.join("static", "images", "ferrari_laferrari.png"), os.path.join("static", "sounds", "ferrari_laferrari.wav")),
-    CarAsset("ford_model_t", os.path.join("static", "images", "ford_model_t.png"), os.path.join("static", "sounds", "ford_model_t.wav")),
-    CarAsset("ford_mustang", os.path.join("static", "images", "ford_mustang.png"), os.path.join("static", "sounds", "ford_mustang.wav")),
-    CarAsset("jaguar_e_type", os.path.join("static", "images", "jaguar_e_type.png"), os.path.join("static", "sounds", "jaguar_e_type.wav")),
-    CarAsset("mclaren_artura", os.path.join("static", "images", "mclaren_artura.png"), os.path.join("static", "sounds", "mclaren_artura.wav")), # Assuming mclaren_artura is distinct from mc_laren_f1
-    CarAsset("porsche_911", os.path.join("static", "images", "porsche_911.png"), os.path.join("static", "sounds", "porsche_911.wav")),
-    # STAR_WARS_PODRACER, SUBARU_WRX_STI, TESLA_ROADSTER names are uppercase in image/sound filenames. Standardizing to lowercase.
-    CarAsset("star_wars_podracer", os.path.join("static", "images", "star_wars_podracer.png"), os.path.join("static", "sounds", "star_wars_podracer.wav")),
-    CarAsset("subaru_wrx_sti", os.path.join("static", "images", "subaru_wrx_sti.png"), os.path.join("static", "sounds", "subaru_wrx_sti.wav")),
-    CarAsset("tesla_roadster", os.path.join("static", "images", "tesla_roadster.png"), os.path.join("static", "sounds", "tesla_roadster.wav")),
+# Electrical Vehicle (EV) and hybrid vehicles makes supported by DMuffler
+TESLA = "Tesla"
+APTERA = "Aptera"
+KIA = "Kia"
+RIVIAN = "Rivian"
+FORD = "Ford"
+VINFAST = "VINFAST"
+
+SUPPORTED_VEHICLES: List[SupportedVehicle] = [
+        SupportedVehicle(TESLA, "Model 3",  2023),
+        SupportedVehicle(APTERA, "Atera", 2023),
+        SupportedVehicle(KIA, "Niro", 2023),
+        SupportedVehicle(RIVIAN, "R1T", 2023),
+        SupportedVehicle(FORD, "Mustang Mach-E", 2023),
+        SupportedVehicle(VINFAST, "VF 8", 2023)
 ]
 
-# Legacy flat constants (for backward compatibility)
-# Updated to use os.path.join and .wav for sounds, and standardized filenames for consistency
-bmw_m4_img = os.path.join("static", "images", "bmw_m4.png")
-bmw_m4_sound = os.path.join("static", "sounds", "bmw_m4.wav")
-ferrari_laferrari_img = os.path.join("static", "images", "ferrari_laferrari.png")
-ferrari_laferrari_sound = os.path.join("static", "sounds", "ferrari_laferrari.wav")
-ford_model_t_img = os.path.join("static", "images", "ford_model_t.png")
-ford_model_t_sound = os.path.join("static", "sounds", "ford_model_t.wav")
-ford_mustang_img = os.path.join("static", "images", "ford_mustang.png")
-ford_mustang_sound = os.path.join("static", "sounds", "ford_mustang.wav")
-jaguar_e_type_img = os.path.join("static", "images", "jaguar_e_type.png")
-jaguar_e_type_sound = os.path.join("static", "sounds", "jaguar_e_type.wav")
-mclaren_artura_img = os.path.join("static", "images", "mclaren_artura.png")
-mclaren_artura_sound = os.path.join("static", "sounds", "mclaren_artura.wav")
-porsche_911_img = os.path.join("static", "images", "porsche_911.png")
-porsche_911_sound = os.path.join("static", "sounds", "porsche_911.wav")
-# Standardizing legacy constant names for image/sound files to lowercase
-star_wars_podracer_img = os.path.join("static", "images", "star_wars_podracer.png")
-star_wars_podracer_sound = os.path.join("static", "sounds", "star_wars_podracer.wav")
-subaru_wrx_sti_img = os.path.join("static", "images", "subaru_wrx_sti.png")
-subaru_wrx_sti_sound = os.path.join("static", "sounds", "subaru_wrx_sti.wav")
-tesla_roadster_img = os.path.join("static", "images", "tesla_roadster.png")
-tesla_roadster_sound = os.path.join("static", "sounds", "tesla_roadster.wav")
+@dataclass(frozen=True)
+class VehicleAsset:
+    """ Defines canonical image and sound asset paths of all digital vehicles in DMuffler.
+    """
+    engineSoundID: int  # Unique Sound ID to let embedded software communicate with mobile app
+    name: str           # Car name for User Interfaces (UI's)
+    image: str          # Relative file path to .png image assets
+    sound: str          # Relative file path to .wav image assets
 
-# The commented-out block of old sound constants has been removed.
 
-# Utility: Validate asset existence at startup
-def validate_assets():
-    missing = []
-    for asset in CAR_ASSETS:
-        if not os.path.isfile(asset.image):
-            missing.append(asset.image)
-        if not os.path.isfile(asset.sound):
-            missing.append(asset.sound)
-    if missing:
-        raise FileNotFoundError(f"Missing asset files: {missing}")
+# Internal Combustion Enginer (ICE) car engine sound CONSTANTS
+# UPDATE the following CarAsset List and ../sounds & ../images folders to add new ICE sounds
+MC_LAREN_F1 = 0
+LA_FERRARI = 1
+PORCSHE_911 = 2
+BMW_M4 = 3
+JAGUAR_E_TYPE_SERIES_1 = 4
+FORD_MODEL_T = 5
+FORD_MUSTANG_GT350 = 6
 
+VEHICLE_ASSETS: List[VehicleAsset] = [
+    VehicleAsset(MC_LAREN_F1, "McLaren F1", "static/images/McLarenF1.png", "static/sounds/McLarenF1.wav"),
+    VehicleAsset(LA_FERRARI, "Ferrari LaFerrari", "static/images/LaFerrari.png", "static/sounds/LaFerrari.wav"),
+    VehicleAsset(PORCSHE_911, "Porsche 911", "static/images/Porsche911.png", "static/sounds/Porsche911.wav"),
+    VehicleAsset(BMW_M4, "BMW M4", "static/images/BMW_M4.png", "static/sounds/BMW_M4.wav"),
+    VehicleAsset(JAGUAR_E_TYPE_SERIES_1, "Jaguar E-Type", "static/images/JaguarEtypeSeries1.png", "static/sounds/JaguarEtypeSeries1.wav"),
+    VehicleAsset(FORD_MODEL_T, "Ford Model T", "static/images/FordModelT.png", "static/sounds/FordModelT.wav"),
+    VehicleAsset(FORD_MUSTANG_GT350, "Ford Mustang GT350", "static/images/FordMustangGT350.png", "static/sounds/FordMustangGT350.wav"),
+    # TODO VehicleAsset("star_wars_podracer", "static/images/STAR_WARS_PODRACER.png", "static/sounds/STAR_WARS_PODRACER.mp3"),
+    # TODO VehicleAsset("subaru_wrx_sti", "static/images/SUBARU_WRX_STI.png", "static/sounds/SUBARU_WRX_STI.mp3"),
+]
 
 # Physical hardware CONTSTANTS
 GO_PEDAL = 0                    # Pedal furthest right in the UK and USA
@@ -154,7 +116,7 @@ PERCENTAGE_UNITS = "%"
 MILLIMETER_UNITS = "mm"
 CENTIMETER_UNITS = "cm"
 
-# Datatbase Table Name & HTTP error code  CONSTANTS
+# Datatbase Table Name & HTTP error code CONSTANTS
 DATABASE_TABLE_NAMES = ["Users", "Vehicles", "EngineSounds", "TODO"]      #TODO
 USERS_TABLE = 0
 VEHICLES_TABLE = 1
@@ -186,7 +148,26 @@ PIN16_UNSWITCHED_VEHICLE_BATTERY_POSITIVE = "RED_WIRE"              # 4
 SAE_J1850_PWM = 1
 SAE_J1850_VPW = 2
 
-# The GlobalConstants class definition and its __main__ block have been removed
-# as they were not serving a functional purpose for a constants file.
-# If a specific action is needed when running this file directly,
-# it can be placed at the module level under an if __name__ == "__main__": block.
+# Utility: Validate asset existence at startup
+def validate_assets():
+    """ Validate that sound and images file assets exist
+
+    Arg(s):
+        None
+
+    Returns: Nothing
+    """
+    missing = []
+    for asset in VEHICLE_ASSETS:
+        if not os.path.isfile(asset.image):
+            missing.append(asset.image)
+        if not os.path.isfile(asset.sound):
+            missing.append(asset.sound)
+    if missing:
+        raise FileNotFoundError(f"Missing asset files: {missing}")
+
+
+if __name__ == "__main__":
+    print(f"Open GlobalConstants.py to see CONSTANTS like {VEHICLE_ASSETS[BMW_M4].image} used in the EV Customs DMuffler library")
+    validate_assets()
+    print("Successfully exitting GlobalConstants.py")

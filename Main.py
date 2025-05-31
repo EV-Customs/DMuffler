@@ -68,17 +68,6 @@ def main(db: Database):
     peek.peek(f"Main application function called with database: {db.db_path}", color="green") # Example use of db
     pass
 
-# play_external_audio() function was removed in a previous refactoring step.
-
-def demo_delay(delay_time):
-    """
-    Pause execution for a specified amount of time.
-
-    Args:
-        delay_time (float): The time in seconds to pause execution.
-    """
-    time.sleep(delay_time)
-
 
 if __name__ == "__main__":
     try:

@@ -92,6 +92,7 @@ class EngineSoundPitchShifter:
                 # log_error(f"Error closing stream during __init__ cleanup after failure: {ce}")
                 logging.error(f"Error closing stream during __init__ cleanup after failure: {ce}")
 
+
     def cleanup(self):
         """ Stop the audio stream and release resources """
         if hasattr(self, 'stream') and self.stream is not None and self.stream.active:
