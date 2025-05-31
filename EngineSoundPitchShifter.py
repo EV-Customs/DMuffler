@@ -34,7 +34,10 @@ try:
     # import pyautogui or import keyboard
 
 except ImportError :
-
+    print("Python can't find module in sys.path or requirements.txt or import statements above!")
+    print("Please verify that .venvDMuffler virtual environment is running, if not run:")
+    print("python3 -m venv .venvDMuffler")
+    print("source .venvDMuffler/bin/activate")
 
 ## Internal libraries
 import GlobalConstants as GC
@@ -45,13 +48,13 @@ class EngineSoundPitchShifter:
     isWPressed = False
     isEscPressed = False
 
-    def __init__(self, baseAudioFilename):
+    def __init__(self, baseAudioID: str):
         """ Constructor to initialize an EngineSoundPitchShifter object
             Defaults to McLaren F1 sound, if invalid baseAudio argumnet is passed
 
         Args:
             self: Newly created EngineSoundPitchShifter object
-            baseAudioFilename (str): CONSTANT from GlobalConstants.py of audio filename (.wav) file to be played and/or modulated
+            baseAudioID (str): CONSTANT from GlobalConstants.py of audio file to be played and/or modulated
 
         Object instance variables:
             audioFilepath (str): Relative filepath of baseAudio audio clip
@@ -68,8 +71,8 @@ class EngineSoundPitchShifter:
         """
         # Load audio file
         EngineSoundPitchShifterPyDirectory = os.path.dirname(os.path.abspath(__file__))
-        self.audioFilepath = os.path.join(EngineSoundPitchShifterPyDirectory, "static", "sounds", baseAudioFilename)
-        self.audioTimeSeries, self.sampleRate = librosa.load(self.soundFilePath)
+        self.audioFilepath = os.path.join(EngineSoundPitchShifterPyDirectory, GC.VEHICLE_ASSETS[int(baseAudioID)].sound)
+        self.audioTimeSeries, self.sampleRate = librosa.load(self.audioFilepath)
 
         # Initialize playback variables
         self.playing = False
@@ -88,6 +91,7 @@ class EngineSoundPitchShifter:
 
             # Start the stream
             self.stream.start()
+
 
     def cleanup(self):
         """ Stop the audio stream and release resources
@@ -142,10 +146,12 @@ class EngineSoundPitchShifter:
         try:
             if key.char.upper() == 'W':
                 isWPressed = False
+                print(" key released, engine revving down")
 
         except AttributeError:
             # Special key
             pass
+
 
     def simulate_gas_pedal(self):
         global isWPressed, isEscPressed

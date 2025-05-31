@@ -47,20 +47,20 @@ SUPPORTED_VEHICLES: List[SupportedVehicle] = [
 class VehicleAsset:
     """ Defines canonical image and sound asset paths of all digital vehicles in DMuffler.
     """
-    engineSoundID: int  # Unique Sound ID to let embedded software communicate with mobile app
+    engineSoundID: str  # Unique Sound ID to let embedded software communicate with mobile app
     name: str           # Car name for User Interfaces (UI's)
     image: str          # Relative file path to .png image assets
     sound: str          # Relative file path to .wav image assets
 
 # Internal Combustion Enginer (ICE) car engine sound CONSTANTS
 # UPDATE the following CarAsset List and ../sounds & ../images folders to add new ICE sounds
-MC_LAREN_F1 = 0
-LA_FERRARI = 1
-PORCSHE_911 = 2
-BMW_M4 = 3
-JAGUAR_E_TYPE_SERIES_1 = 4
-FORD_MODEL_T = 5
-FORD_MUSTANG_GT350 = 6
+MC_LAREN_F1 = "0"
+LA_FERRARI = "1"
+PORCSHE_911 = "2"
+BMW_M4 = "3"
+JAGUAR_E_TYPE_SERIES_1 = "4"
+FORD_MODEL_T = "5"
+FORD_MUSTANG_GT350 = "6"
 
 VEHICLE_ASSETS: List[VehicleAsset] = [
     VehicleAsset(MC_LAREN_F1, "McLaren F1", "static/images/McLarenF1.png", "static/sounds/McLarenF1.wav"),
