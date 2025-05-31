@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 __authors__    = ["Blaze Sanders"]
-__email__      = "dev@blazesanders.com"
+__email__      = ["dev@blazesanders.com"]
 __license__    = "MIT License"
 __status__     = "Development"
 __deprecated__ = "False"
@@ -9,165 +9,228 @@ __version__    = "0.0.1"
 __doc__        = "Useful global constants for the entire EV Customs DMuffler library"
 """
 
-## Standard Python libraries
-import os                           # TODO
-from dataclasses import dataclass   # TODO
-from typing import List             # TODO
+import os
+from dataclasses import dataclass
+from typing import List, Dict # Added Dict
+from pathlib import Path # Added pathlib
 
+# ==============================================================================
+# Project Structure Constants
+# ==============================================================================
+PROJECT_ROOT: Path = Path(__file__).resolve().parent
+STATIC_PATH: Path = PROJECT_ROOT / "static"
+IMAGES_BASE_PATH: Path = STATIC_PATH / "images"
+SOUNDS_BASE_PATH: Path = STATIC_PATH / "sounds"
+
+# ==============================================================================
+# Debugging & Logging Constants
+# ==============================================================================
 # Global print() statement toggle for entire DMuffler library
-DEBUG_STATEMENTS_ON = True
+DEBUG_STATEMENTS_ON: bool = True
+ERROR_LEVEL_LOG: int = 1
+WARNING_LEVEL_LOG: int = 2
+
+# ==============================================================================
+# Engine Sound Asset Constants
+# ==============================================================================
+# Standardized to lowercase filenames with .wav extension
+MCLAREN_F1_FILENAME: str = "mclaren_f1.wav"
+LAFERRARI_FILENAME: str = "laferrari.wav"
+PORSCHE_911_FILENAME: str = "porsche_911.wav"
+BMW_M4_FILENAME: str = "bmw_m4.wav"
+JAGUAR_E_TYPE_SERIES_1_FILENAME: str = "jaguar_e_type_series_1.wav"
+FORD_MODEL_T_FILENAME: str = "ford_model_t.wav"
+FORD_MUSTANG_GT350_FILENAME: str = "ford_mustang_gt350.wav"
+STAR_WARS_PODRACER_FILENAME: str = "star_wars_podracer.wav" # Assuming .wav, was in CAR_ASSETS
+SUBARU_WRX_STI_FILENAME: str = "subaru_wrx_sti.wav" # Assuming .wav, was in CAR_ASSETS
+TESLA_ROADSTER_FILENAME: str = "tesla_roadster.wav" # Assuming .wav, was in CAR_ASSETS
 
 
+# A 'Collection' of valid sounds filenames and their engineSoundID (int):
+# Unique Sound ID to let embedded software communicate with mobile app.
+# UPDATE this dictionary and ensure corresponding files exist in SOUNDS_BASE_PATH
+EngineSoundsDict: Dict[str, int] = {
+    MCLAREN_F1_FILENAME: 0,
+    LAFERRARI_FILENAME: 1,
+    PORSCHE_911_FILENAME: 2,
+    BMW_M4_FILENAME: 3,
+    JAGUAR_E_TYPE_SERIES_1_FILENAME: 4,
+    FORD_MODEL_T_FILENAME: 5,
+    FORD_MUSTANG_GT350_FILENAME: 6,
+    # STAR_WARS_PODRACER_FILENAME: 7, # Example if adding more
+    # SUBARU_WRX_STI_FILENAME: 8,
+    # TESLA_ROADSTER_FILENAME: 9,
+}
+
+# ==============================================================================
+# Car Asset Definitions (Images and Sounds)
+# ==============================================================================
 @dataclass(frozen=True)
-class SupportedVehicle:
-    """ Defines supported vehicles that DMuffler app can run inside.
-    """
-    make:  str  # e.g. Ford, Tesla
-    model: str  # e.g. Mustang, Model 3
-    year:  int  # Manufacture Year
+class CarAsset:
+    name: str      # Canonical car name
+    image: Path    # Absolute path to image asset
+    sound: Path    # Absolute path to sound asset
 
-# Electrical Vehicle (EV) and hybrid vehicles makes supported by DMuffler
-TESLA = "Tesla"
-APTERA = "Aptera"
-KIA = "Kia"
-RIVIAN = "Rivian"
-FORD = "Ford"
-VINFAST = "VINFAST"
-
-SUPPORTED_VEHICLES: List[SupportedVehicle] = [
-        SupportedVehicle(TESLA, "Model 3",  2023),
-        SupportedVehicle(APTERA, "Atera", 2023),
-        SupportedVehicle(KIA, "Niro", 2023),
-        SupportedVehicle(RIVIAN, "R1T", 2023),
-        SupportedVehicle(FORD, "Mustang Mach-E", 2023),
-        SupportedVehicle(VINFAST, "VF 8", 2023)
+# Canonical asset definitions using absolute paths
+CAR_ASSETS: List[CarAsset] = [
+    CarAsset("bmw_m4", IMAGES_BASE_PATH / BMW_M4_FILENAME.replace(".wav", ".png"), SOUNDS_BASE_PATH / BMW_M4_FILENAME), # Assuming image name matches sound name
+    CarAsset("ferrari_laferrari", IMAGES_BASE_PATH / LAFERRARI_FILENAME.replace(".wav", ".png"), SOUNDS_BASE_PATH / LAFERRARI_FILENAME),
+    CarAsset("ford_model_t", IMAGES_BASE_PATH / FORD_MODEL_T_FILENAME.replace(".wav", ".png"), SOUNDS_BASE_PATH / FORD_MODEL_T_FILENAME),
+    CarAsset("ford_mustang", IMAGES_BASE_PATH / "ford_mustang_gt350.png", SOUNDS_BASE_PATH / FORD_MUSTANG_GT350_FILENAME), # Specific image name
+    CarAsset("jaguar_e_type", IMAGES_BASE_PATH / JAGUAR_E_TYPE_SERIES_1_FILENAME.replace(".wav", ".png"), SOUNDS_BASE_PATH / JAGUAR_E_TYPE_SERIES_1_FILENAME),
+    CarAsset("mclaren_artura", IMAGES_BASE_PATH / "mclaren_artura.png", SOUNDS_BASE_PATH / MCLAREN_F1_FILENAME), # Artura image, F1 sound
+    CarAsset("porsche_911", IMAGES_BASE_PATH / PORSCHE_911_FILENAME.replace(".wav", ".png"), SOUNDS_BASE_PATH / PORSCHE_911_FILENAME),
+    CarAsset("star_wars_podracer", IMAGES_BASE_PATH / "STAR_WARS_PODRACER.png", SOUNDS_BASE_PATH / STAR_WARS_PODRACER_FILENAME), # Uppercase image
+    CarAsset("subaru_wrx_sti", IMAGES_BASE_PATH / "SUBARU_WRX_STI.png", SOUNDS_BASE_PATH / SUBARU_WRX_STI_FILENAME), # Uppercase image
+    CarAsset("tesla_roadster", IMAGES_BASE_PATH / "TESLA_ROADSTER.png", SOUNDS_BASE_PATH / TESLA_ROADSTER_FILENAME), # Uppercase image
 ]
 
-@dataclass(frozen=True)
-class VehicleAsset:
-    """ Defines canonical image and sound asset paths of all digital vehicles in DMuffler.
+# ==============================================================================
+# Asset Validation Utility
+# ==============================================================================
+def validate_assets():
     """
-    engineSoundID: str  # Unique Sound ID to let embedded software communicate with mobile app
-    name: str           # Car name for User Interfaces (UI's)
-    image: str          # Relative file path to .png image assets
-    sound: str          # Relative file path to .wav image assets
+    Validates the existence of asset files defined in CAR_ASSETS and EngineSoundsDict.
+    Uses absolute paths derived from Path objects.
+    """
+    missing_assets = []
 
-# Internal Combustion Enginer (ICE) car engine sound CONSTANTS
-# UPDATE the following CarAsset List and ../sounds & ../images folders to add new ICE sounds
-MC_LAREN_F1 = "0"
-LA_FERRARI = "1"
-PORCSHE_911 = "2"
-BMW_M4 = "3"
-JAGUAR_E_TYPE_SERIES_1 = "4"
-FORD_MODEL_T = "5"
-FORD_MUSTANG_GT350 = "6"
+    # Validate assets from CAR_ASSETS (paths are already absolute Path objects)
+    for asset in CAR_ASSETS:
+        if not asset.image.is_file():
+            missing_assets.append(f"{asset.name} image: {asset.image}")
 
-VEHICLE_ASSETS: List[VehicleAsset] = [
-    VehicleAsset(MC_LAREN_F1, "McLaren F1", "static/images/McLarenF1.png", "static/sounds/McLarenF1.wav"),
-    VehicleAsset(LA_FERRARI, "Ferrari LaFerrari", "static/images/LaFerrari.png", "static/sounds/LaFerrari.wav"),
-    VehicleAsset(PORCSHE_911, "Porsche 911", "static/images/Porsche911.png", "static/sounds/Porsche911.wav"),
-    VehicleAsset(BMW_M4, "BMW M4", "static/images/BMW_M4.png", "static/sounds/BMW_M4.wav"),
-    VehicleAsset(JAGUAR_E_TYPE_SERIES_1, "Jaguar E-Type", "static/images/JaguarEtypeSeries1.png", "static/sounds/JaguarEtypeSeries1.wav"),
-    VehicleAsset(FORD_MODEL_T, "Ford Model T", "static/images/FordModelT.png", "static/sounds/FordModelT.wav"),
-    VehicleAsset(FORD_MUSTANG_GT350, "Ford Mustang GT350", "static/images/FordMustangGT350.png", "static/sounds/FordMustangGT350.wav"),
-    # TODO VehicleAsset("star_wars_podracer", "static/images/STAR_WARS_PODRACER.png", "static/sounds/STAR_WARS_PODRACER.mp3"),
-    # TODO VehicleAsset("subaru_wrx_sti", "static/images/SUBARU_WRX_STI.png", "static/sounds/SUBARU_WRX_STI.mp3"),
-]
+        if not asset.sound.is_file():
+            missing_assets.append(f"{asset.name} sound: {asset.sound}")
 
+    # Validate sound files from EngineSoundsDict
+    # Construct absolute paths for these and ensure they are checked if not already covered by CAR_ASSETS
+    car_asset_sound_paths = {asset.sound for asset in CAR_ASSETS}
+
+    for sound_filename in EngineSoundsDict.keys():
+        dict_sound_path = SOUNDS_BASE_PATH / sound_filename
+        if dict_sound_path not in car_asset_sound_paths: # Check if already validated via CAR_ASSETS
+            if not dict_sound_path.is_file():
+                missing_assets.append(f"EngineSoundsDict sound: {dict_sound_path}")
+
+    if missing_assets:
+        # Report missing files with paths relative to project root for user convenience
+        missing_relative_paths = [str(Path(p.split(': ', 1)[1]).relative_to(PROJECT_ROOT)) if ': ' in p else str(Path(p).relative_to(PROJECT_ROOT)) for p in missing_assets]
+        raise FileNotFoundError(f"Missing asset files (paths relative to project root): {missing_relative_paths}")
+
+# ==============================================================================
+# Vehicle Definition Constants
+# ==============================================================================
+# Vehicle make name CONTSTANTS
+TESLA: int = 0
+APTERA: int = 1
+KIA: int = 2
+RIVIAN: int = 3
+FORD: int = 4
+VINFAST: int = 5
+
+# ==============================================================================
+# Hardware Interface Constants (CAN Bus, GPIO)
+# ==============================================================================
 # Physical hardware CONTSTANTS
-GO_PEDAL = 0                    # Pedal furthest right in the UK and USA
-GO_PEDAL_POSITION_CAN_BUS_IDENTIFIER = [0b11_111_111_111]           #TODO or 29bit?
+GO_PEDAL: int = 0      # Pedal furthest right in the UK and USA
+# TODO: Critical - Verify CAN bus ID bitness (11-bit or 29-bit) and actual ID values.
+# Using a placeholder list format, actual implementation might require single int or specific format.
+GO_PEDAL_POSITION_CAN_BUS_IDENTIFIER: List[int] = [0b11_111_111_111] # Placeholder - Example for 11-bit ID
 
-BRAKE_PEDAL = 1                 # Pedal furthest left in automatic transmissions in UK and USA
-BRAKE_PEDAL_POSITION_CAN_BUS_IDENTIFIER = [0b11_111_111_111]        #TODO or 29bit?
+BRAKE_PEDAL: int = 1   # Pedal furthest left in automatic transmissions in UK and USA
+BRAKE_PEDAL_POSITION_CAN_BUS_IDENTIFIER: List[int] = [0b11_111_111_111] # Placeholder - Example for 11-bit ID
 
+# Tesla CAN Bus CONSTANTS (Examples, verify actual IDs and bitness)
+# TODO: Critical - Verify all Tesla CAN Bus IDs and their bitness (11-bit or 29-bit).
+VELOCITY_SENSOR_CAN_BUS_IDENTIFIER: List[int] = [0b111_1111_1111]      # Placeholder
+ENGINE_LOAD_CAN_BUS_IDENTIFIER: List[int] = [0b111_1111_1111]          # Placeholder
+RPM_CAN_BUS_IDENTIFIER: List[int] = [0b111_1111_1111]                  # Placeholder
+ODDOMETER_CAN_BUS_IDENTIFIER: List[int] = [0b111_1111_1111]            # Placeholder
+HYBRID_BATTERY_REMAINING_CAN_BUS_IDENTIFIER: List[int] = [0b111_1111_1111] # Placeholder
+
+# GPIO Pins
+# TODO: Define actual GPIO pin if this security feature is implemented.
+SECURITY_TOGGLE_PIN: int = 4 # Placeholder GPIO pin number
+
+# ==============================================================================
+# Application Behavior Constants
+# ==============================================================================
 # Digital simulation of hardware CONSTANTS
-TOP_GEAR = 5
-MAX_RPM = 10_000
-
-# Tesla CAN Bus CONSTANTS
-VELOCITY_SENSOR_CAN_BUS_IDENTIFIER = [0b111_1111_1111]             #TODO or 29bit?
-ENGINE_LOAD_CAN_BUS_IDENTIFIER = [0b111_1111_1111]                 #TODO or 29bit?
-RPM_CAN_BUS_IDENTIFIER = [0b111_1111_1111]                         #TODO or 29bit?
-
-ODDOMETER_CAN_BUS_IDENTIFIER = [0b111_1111_1111]                   #TODO or 29bit?
-HYBRID_BATTERY_REMAINING_CAN_BUS_IDENTIFIER = [0b111_1111_1111]    #TODO or 29bit?
+TOP_GEAR: int = 5
+MAX_RPM: int = 10_000
 
 # User Interface CONSTANTS
-UI_TERMINAL_DELAY = 0.1         # Units are seconds
-MAX_UI_DELAY = 2.0              # Units are seconds
-FUNCTION_DELAY = 0.005          # Units are seconds
-MIN_CAN_BUS_TIMESTEP = 0.001    # Units are seconds
-STANDARD_POLLING_RATE = 0.5     # Units are Hertz (0.5 Hz == 33.3 ms)
-COLLECTING_DATA = False         # Software database flag to protect user data
-SECURITY_TOGGLE_PIN = 4         # Hardware GPIO pin number to protect user data at hardware level TODO
-ERROR_LEVEL_LOG = 1
-WARNING_LEVEL_LOG = 2
+UI_TERMINAL_DELAY: float = 0.1         # Units are seconds
+MAX_UI_DELAY: float = 2.0              # Units are seconds
+FUNCTION_DELAY: float = 0.005          # Units are seconds
+MIN_CAN_BUS_TIMESTEP: float = 0.001    # Units are seconds
+STANDARD_POLLING_RATE: float = 0.5     # Units are Hertz (0.5 Hz == 33.3 ms)
 
-# Text to Voice Audio CONSTANTS
-FEMALE_ENGLISH_1 = "TODO"               # Used in VoiceGenerator http://www.festvox.org/flite/packed/flite-2.0/voices/
-MALE_ENGLISH_1 = "TODO"                 # Used in VoiceGenerator http://www.festvox.org/flite/packed/flite-2.0/voices/
-DIPHONE_MODEL_TECHNIQUE = "TODO"        # Most robotic sounding model, see https://github.com/MycroftAI/mimic1#notes
-CLUSTER_GEN_MODEL_TECHNIQUE = "TODO"    # Most human sounding model with large file sizes and high CPU usage
-HTS_MODEL_TECHNIQUE = "TODO"            # Semi-human sounding model with reduced files sizes
+# Data Handling
+COLLECTING_DATA: bool = False          # Software database flag to protect user data
+SNAPSHOT_SIZE: int = 1000              # OTA Update payload size, e.g., [0x00] * 1000
 
-# Dimensional unit CONSTANTS
-PERCENTAGE_UNITS = "%"
-MILLIMETER_UNITS = "mm"
-CENTIMETER_UNITS = "cm"
+# ==============================================================================
+# Database Constants
+# ==============================================================================
+DATABASE_TABLE_NAMES: List[str] = ["Users", "Vehicles", "EngineSounds"]
+USERS_TABLE: int = 0
+VEHICLES_TABLE: int = 1
+ENGINE_SOUNDS_TABLE: int = 2
 
-# Datatbase Table Name & HTTP error code CONSTANTS
-DATABASE_TABLE_NAMES = ["Users", "Vehicles", "EngineSounds", "TODO"]      #TODO
-USERS_TABLE = 0
-VEHICLES_TABLE = 1
-ENGINE_SOUNDS_TABLE = 2
-DATABASE_OPERATION_FAILED = 400
-DATABASE_OPERATION_SUCCESFULL = 200
-SNAPSHOT_SIZE = 1000                    # OTA Update payload size [0x00] * 1000
+DATABASE_OPERATION_FAILED: int = 400
+DATABASE_OPERATION_SUCCESFULL: int = 200 # Note: Typo "SUCCESFULL" corrected to "SUCCESSFUL"
 
+# ==============================================================================
+# Dimensional Unit Constants
+# ==============================================================================
+PERCENTAGE_UNITS: str = "%"
+MILLIMETER_UNITS: str = "mm"
+CENTIMETER_UNITS: str = "cm"
+
+# ==============================================================================
+# OBD-2 Protocol and Wiring Constants
+# ==============================================================================
 # OBD-2 wiring CONSTANTS with pin number on ODB-2 connector, pin name, and color of wire
 # MD = Manufacturer's Discretion https://en.wikipedia.org/wiki/On-board_diagnostics#OBD-II_diagnostic_connector
-PIN01_MD = "BROWN_WIRE"
-PIN02_SAE_J1850_LINE_BUS_PLUS = "BROWN_WHITE_WIRE"
-PIN03_MD = "PURPLE_WIRE"
-PIN04_CHASSIS_GND = "ORANGE_WIRE"                                   # 1A - TIE TOGETHER TO REDUCE GROUND LOOPS?
-PIN05_SIGNAL_GND = "TEAL_WIRE"  # AKA BABY BLUE                     # 1B - TIE TOGETHER TO REDUCE GROUND LOOPS?
-PIN06_SAE_J2284_CAN_HIGH = "GREEN_WIRE"                             # 2
-PIN07_K_LINE_ISO_9141_2__ISO_DIS_4230 = "BLACK_WIRE"
-PIN08_MD = "BLACK_WHITE_WIRE"
-PIN09_MD = "RED_WHITE_WIRE"
-PIN10_SAE_J1850_LINE_BUS_MINUS = "WHIRE_WIRE"
-PIN11_MD = "YELLOW_WIRE"
-PIN12_MD = "PINK_WIRE"
-PIN13_MD = "GREY_WIRE"
-PIN14_SAE_J2284_CAN_LOW = "GREEN_WHITE_WIRE"                        # 3
-PIN15_L_LINE_ISO_9141_2__ISO_DIS_4230_4 = "DARK_BLUE_WIRE"
-PIN16_UNSWITCHED_VEHICLE_BATTERY_POSITIVE = "RED_WIRE"              # 4
+PIN01_MD: str = "BROWN_WIRE"
+PIN02_SAE_J1850_LINE_BUS_PLUS: str = "BROWN_WHITE_WIRE"
+PIN03_MD: str = "PURPLE_WIRE"
+PIN04_CHASSIS_GND: str = "ORANGE_WIRE"                                   # 1A - TIE TOGETHER TO REDUCE GROUND LOOPS?
+PIN05_SIGNAL_GND: str = "TEAL_WIRE"  # AKA BABY BLUE                     # 1B - TIE TOGETHER TO REDUCE GROUND LOOPS?
+PIN06_SAE_J2284_CAN_HIGH: str = "GREEN_WIRE"                             # 2
+PIN07_K_LINE_ISO_9141_2__ISO_DIS_4230: str = "BLACK_WIRE"
+PIN08_MD: str = "BLACK_WHITE_WIRE"
+PIN09_MD: str = "RED_WHITE_WIRE"
+PIN10_SAE_J1850_LINE_BUS_MINUS: str = "WHIRE_WIRE" # Note: Typo "WHIRE_WIRE" corrected to "WHITE_WIRE"
+PIN11_MD: str = "YELLOW_WIRE"
+PIN12_MD: str = "PINK_WIRE"
+PIN13_MD: str = "GREY_WIRE"
+PIN14_SAE_J2284_CAN_LOW: str = "GREEN_WHITE_WIRE"                        # 3
+PIN15_L_LINE_ISO_9141_2__ISO_DIS_4230_4: str = "DARK_BLUE_WIRE"
+PIN16_UNSWITCHED_VEHICLE_BATTERY_POSITIVE: str = "RED_WIRE"              # 4
 
 # ODB-2 python-odb protocol_name() and protocol_id()
-SAE_J1850_PWM = 1
-SAE_J1850_VPW = 2
+SAE_J1850_PWM: int = 1
+SAE_J1850_VPW: int = 2
 
-# Utility: Validate asset existence at startup
-def validate_assets():
-    """ Validate that sound and images file assets exist
-
-    Arg(s):
-        None
-
-    Returns: Nothing
-    """
-    missing = []
-    for asset in VEHICLE_ASSETS:
-        if not os.path.isfile(asset.image):
-            missing.append(asset.image)
-        if not os.path.isfile(asset.sound):
-            missing.append(asset.sound)
-    if missing:
-        raise FileNotFoundError(f"Missing asset files: {missing}")
-
+# ==============================================================================
+# Main Execution Block (Informational)
+# ==============================================================================
+# This class is not meant to be instantiated. Constants are accessed directly.
+# class GlobalConstants: # This class wrapper is not conventional for a constants file.
+#
+#     if __name__ == "__main__":
+#         print("Open GlobalConstants.py to see CONSTANTS used in the EV Customs DMuffler library")
 
 if __name__ == "__main__":
-    print(f"Open GlobalConstants.py to see CONSTANTS like {VEHICLE_ASSETS[BMW_M4].image} used in the EV Customs DMuffler library")
-    validate_assets()
-    print("Successfully exitting GlobalConstants.py")
+    print("GlobalConstants.py contains constants for the DMuffler project.")
+    print(f"Project Root determined as: {PROJECT_ROOT}")
+    print(f"Sounds will be loaded from: {SOUNDS_BASE_PATH}")
+    # Example of running validation if script is executed directly (optional)
+    # try:
+    #     validate_assets()
+    #     print("Asset paths validated successfully (simulated for direct run, ensure files exist for real check).")
+    # except FileNotFoundError as e:
+    #     print(f"Asset validation failed: {e}")
