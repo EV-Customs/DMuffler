@@ -36,6 +36,7 @@ from pyvin import VIN
 ## Internal libraries
 from Database import Database
 from EngineSoundPitchShifter import EngineSoundPitchShifter as ESPS
+import GlobalConstants as GC
 #TODO Fix broken wheel from BluetoothConnector import ScanDelegate
 
 def integration_test():
@@ -43,7 +44,7 @@ def integration_test():
     https://en.wikipedia.org/wiki/Integration_testing
 
     """
-    esps = ESPS(ESPS.MC_LAREN_F1)
+    esps = ESPS(GC.MC_LAREN_F1)
     esps.unit_test()
 
     #bleConnection = ScanDelegate()

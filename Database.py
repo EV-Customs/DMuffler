@@ -101,7 +101,8 @@ class Database:
         """ Prepopulate EngineSoundTable 6 free engine sounds
 
         """
-        for baseAudioFilename in GC.EngineSoundsDict:
+        for asset in GC.VEHICLE_ASSETS:
+            baseAudioFilename = asset.name  # Using the vehicle's name as the identifier
             now = datetime.now().isoformat() #2025-01-30T13:13:13.123456
             self.insert_engine_sounds_table(baseAudioFilename, 0, now)
 
