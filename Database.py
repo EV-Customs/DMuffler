@@ -83,7 +83,7 @@ class Database:
         self.cursor = self.conn.cursor()
 
         # Create ? (?) tables in dbName.db to run DMuffler application without internet
-        self.cursor.execute(f'''CREATE TABLE IF NOT EXISTS {GC.DATABASE_TABLE_NAMES[GC.USERS_TABLE]} (id INTEGER PRIMARY KEY AUTOINCREMENT, first_name TEXT DEFAULT JOHN, timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
+        self.cursor.execute(f'''CREATE TABLE IF NOT EXISTS {GC.DATABASE_TABLE_NAMES[GC.USERS_TABLE]} (id INTEGER PRIMARY KEY AUTOINCREMENT, first_name TEXT DEFAULT 'JOHN', timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
         self.cursor.execute(f'''CREATE TABLE IF NOT EXISTS {GC.DATABASE_TABLE_NAMES[GC.VEHICLES_TABLE]}  (id INTEGER PRIMARY KEY, totalWeeklyWattHours INTEGER, currentCostPerWh REAL, weekNumber TEXT)''')
         self.cursor.execute(f'''CREATE TABLE IF NOT EXISTS {GC.DATABASE_TABLE_NAMES[GC.ENGINE_SOUNDS_TABLE]} (id INTEGER PRIMARY KEY, filename TEXT, cost_in_cents INTEGER, timestamp TEXT)''')
 
@@ -101,7 +101,8 @@ class Database:
         """ Prepopulate EngineSoundTable 6 free engine sounds
 
         """
-        for baseAudioFilename in GC.EngineSoundsDict:
+        for asset in GC.VEHICLE_ASSETS:
+            baseAudioFilename = asset.name  # Using the vehicle's name as the identifier
             now = datetime.now().isoformat() #2025-01-30T13:13:13.123456
             self.insert_engine_sounds_table(baseAudioFilename, 0, now)
 
@@ -121,11 +122,14 @@ class Database:
         if GC.DEBUG_STATEMENTS_ON: print(f"Tuple returned was: {(results, isEmpty, isValid)}")
 
         try:
+            engine_sounds_table_name = GC.DATABASE_TABLE_NAMES[GC.ENGINE_SOUNDS_TABLE]
             if results:
-                idPrimaryKeyToUpdate = results[0][2]
-                self.cursor.execute("UPDATE EngineSoundsTable SET baseAudioFilename = ? WHERE id = ?", (baseAudioFilename, idPrimaryKeyToUpdate))
+                # Assuming results[0] is (id, filename, cost_in_cents, timestamp)
+                # and results[0][0] is the id if the primary key is 'id'.
+                idPrimaryKeyToUpdate = results[0][0]
+                self.cursor.execute(f"UPDATE {engine_sounds_table_name} SET filename = ? WHERE id = ?", (baseAudioFilename, idPrimaryKeyToUpdate))
             else:
-                self.cursor.execute("INSERT INTO EngineSoundsTable (filename, cost_in_cents, timestamp) VALUES (?, ?, ?)", (baseAudioFilename, cost, now))
+                self.cursor.execute(f"INSERT INTO {engine_sounds_table_name} (filename, cost_in_cents, timestamp) VALUES (?, ?, ?)", (baseAudioFilename, cost, now))
 
         except TypeError:
             print("Error occured while inserting data...")
@@ -148,46 +152,28 @@ class Database:
         """
         isEmpty = False
         isValid = True
-
+        result = [] # Initialize result to an empty list
 
         try:
-            if delta < 7:
-                sql_query = """
-                    SELECT timestamp, totalDailyWattHours, id
-                    FROM DailyEnergyTable
-                    WHERE id >= (SELECT id FROM DailyEnergyTable WHERE timestamp = ?)
-                    AND id <= (SELECT id FROM DailyEnergyTable WHERE timestamp = ?)
-                """
+            # Assuming baseAudioFilename is the 'filename' in EngineSoundsTable
+            sql_query = f"SELECT * FROM {GC.DATABASE_TABLE_NAMES[GC.ENGINE_SOUNDS_TABLE]} WHERE filename = ?"
+            self.cursor.execute(sql_query, (baseAudioFilename,))
+            result = self.cursor.fetchall() # fetchall() returns a list of tuples
 
-                self.cursor.execute(sql_query, (baseAudioFilename,))
-                result = self.cursor.fetchall()
-                if len(result) == 0:
-                    isEmpty = True
-                    print("Got no results!")
-                return result, isEmpty, isValid
-            else:
-                sql_query = """
-                    SELECT *
-                    FROM EngineSoundsTable
-                    WHERE baseAudioFilename = baseAudioFilename
-                    AND id <= (SELECT id FROM DailyEnergyTable WHERE timestamp = ?)+6
-                """
+            if not result: # If the list is empty
+                isEmpty = True
+                if GC.DEBUG_STATEMENTS_ON:
+                    print(f"No engine sound found for filename: {baseAudioFilename}")
 
-                self.cursor.execute(sql_query, (start_date,start_date))
-                result = self.cursor.fetchall()
-                if len(result) == 0:
-                    isEmpty = True
-                    print("Got no results!")
+        except sqlite3.OperationalError as e:
+            if GC.DEBUG_STATEMENTS_ON:
+                log_message = str(e).replace("'", "''") # Basic sanitization for SQL
+                self.insert_debug_logging_table(GC.ERROR_LEVEL_LOG, f"Error querying EngineSoundsTable: {log_message}")
+            isValid = False
+            isEmpty = True
+            result = []
 
-                return result, isEmpty, isValid
-
-        except IndexError:
-            if GC.DEBUG_STATEMENTS_ON: self.insert_debug_logging_table("INSIDE INDEX ERROR")
-            return None, None, False
-
-        except sqlite3.OperationalError:
-            if GC.DEBUG_STATEMENTS_ON: self.insert_debug_logging_table(f"INSIDE OPERATIONAL ERROR")
-            return None, None, False
+        return result, isEmpty, isValid
 
 
     def commit_changes(self):
