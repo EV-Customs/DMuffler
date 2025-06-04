@@ -4,182 +4,254 @@ __email__      = ["dev@blazesanders.com"]
 __license__    = "MIT"
 __status__     = "Development"
 __deprecated__ = "False"
-__version__    = "0.0.1"
-__doc__        = "Create pitch varying audio in real-time on low processing power CPUs"
+__version__    = "0.0.1" # Consider semantic versioning
+__doc__        = "Creates pitch-varying engine audio in real-time using librosa for pitch shifting and sounddevice for playback. Responds to keyboard input for simulating gas pedal control."
 """
 
-# Disable PyLint linting messages that seem unuseful
-# https://pypi.org/project/pylint/
-# pylint: disable=invalid-name
-# pylint: disable=global-statement
+# Standard Python libraries
+from time import sleep
+import os
+import sys
 
-## Standard Python libraries
-from time import sleep # https://docs.python.org/3/library/time.html
-import os              # https://docs.python.org/3/library/os.html
-
-## 3rd party libraries
+# Third-party libraries
 try:
-    # Audio analysis, with building blocks necessary to create music information retrieval systems
-    # https://librosa.org/doc/latest/index.html
     import librosa
-
-    # Play and record NumPy arrays containing audio signals.
-    # https://python-sounddevice.readthedocs.io/
     import sounddevice as sd
     import numpy as np
-
-    # Control and monitor input devices (mouse & keyboard)
-    # https://pypi.org/project/pynput/
     from pynput import keyboard
-    # import pyautogui or import keyboard
+except ImportError as e:
+    # logging_utils might not be available if this is the first import failure.
+    # Using a print statement for this critical startup error.
+    print(f"CRITICAL ERROR: Missing essential libraries: {e}. Please install librosa, sounddevice, numpy, and pynput.", file=sys.stderr)
+    sys.exit(1)
 
-except ImportError :
-    print("Python can't find module in sys.path or requirements.txt or import statements above!")
-    print("Please verify that .venvDMuffler virtual environment is running, if not run:")
-    print("python3 -m venv .venvDMuffler")
-    print("source .venvDMuffler/bin/activate")
-
-## Internal libraries
+# Local application/library specific imports
 import GlobalConstants as GC
+from logging_utils import log_error, log_info, log_warning
 
 class EngineSoundPitchShifter:
+    """
+    Manages loading, pitch shifting, and real-time playback of an engine sound.
+    Keyboard 'W' key simulates a gas pedal to control the pitch.
+    """
 
-    # Global variables for keyboard input (to simulate gas pedal of a vehicle)
-    isWPressed = False
-    isEscPressed = False
-
-    def __init__(self, baseAudioID: str):
-        """ Constructor to initialize an EngineSoundPitchShifter object
-            Defaults to McLaren F1 sound, if invalid baseAudio argumnet is passed
+    def __init__(self, base_audio_filename: str):
+        """
+        Constructor for EngineSoundPitchShifter.
 
         Args:
-            self: Newly created EngineSoundPitchShifter object
-            baseAudioID (str): CONSTANT from GlobalConstants.py of audio file to be played and/or modulated
+            base_audio_filename (str): Filename of the base audio (e.g., "mclaren_f1.wav")
+                                       to be loaded from GC.SOUNDS_BASE_PATH.
 
-        Object instance variables:
-            audioFilepath (str): Relative filepath of baseAudio audio clip
-            audioTimeSeries (numpy.ndarray): Time series of audio data
-            sampleRate (int): Sample rate of audio data
-            playing (Bool): Flag to indicate if audio is currently playing
-            currentFrame (int): Current frame of audio playback
-            pitchFactor (float): Factor to modulate pitch of audio playback
-            running (Bool): Flag to indicate if audio is currently running
-            stream (Stream): Stream object for audio playback
-
-        Returns:
-            New EngineSoundPitchShifter() object
+        Instance Variables:
+            audio_filepath (Path): Absolute path to the loaded audio file.
+            audio_time_series (np.ndarray): Time series of audio data.
+            sample_rate (int): Sample rate of the audio data.
+            playing (bool): Flag to indicate if audio playback is active in the callback.
+            current_frame (int): Current frame index for audio playback.
+            pitch_factor (float): Factor to modulate the pitch of audio playback.
+            running (bool): Flag to indicate if the audio stream is set up and processing is active.
+            is_w_pressed (bool): State of the 'W' key (gas pedal simulation).
+            stream (sd.OutputStream | None): sounddevice OutputStream object for audio playback.
         """
-        # Load audio file
-        EngineSoundPitchShifterPyDirectory = os.path.dirname(os.path.abspath(__file__))
-        self.audioFilepath = os.path.join(EngineSoundPitchShifterPyDirectory, GC.VEHICLE_ASSETS[int(baseAudioID)].sound)
-        self.audioTimeSeries, self.sampleRate = librosa.load(self.audioFilepath)
+        self.audio_filepath = None
+        self.audio_time_series = np.array([])
+        self.sample_rate = 0
 
-        # Initialize playback variables
-        self.playing = False
-        self.currentFrame = 0
-        self.pitchFactor = 1.0
+        self.playing = False # Controls if audio_callback outputs sound or silence
+        self.current_frame = 0
+        self.pitch_factor = 1.0
+        self.is_w_pressed = False
+        # self.is_esc_pressed is removed as it's unused.
 
-        # Setup audio stream using sounddevice library
+        self.stream = None
+        self.running = False # Indicates if the stream is successfully set up and running
+
+        if not base_audio_filename:
+            log_error("Initialization failed: No base audio filename provided.")
+            return # self.running remains False
+
         try:
-            self.stream = sd.OutputStream(channels=1, samplerate=self.sampleRate, callback=self.audio_callback)
-        except NameError:
-            peek("Sounddevice object is not defined", color="red")
-        else:
-            self.stream.start()
-        finally:
-            self.running = True
+            # Construct absolute Path using GC.SOUNDS_BASE_PATH (which is already absolute)
+            self.audio_filepath = GC.SOUNDS_BASE_PATH / base_audio_filename
+            log_info(f"Attempting to load audio file: {self.audio_filepath}")
+            # librosa.load requires a string path
+            self.audio_time_series, self.sample_rate = librosa.load(str(self.audio_filepath), sr=None) # sr=None to preserve original sample rate
+            log_info(f"Successfully loaded '{base_audio_filename}'. Sample rate: {self.sample_rate}, Duration: {len(self.audio_time_series)/self.sample_rate:.2f}s")
+        except FileNotFoundError:
+            log_error(f"Audio file not found at {self.audio_filepath}. EngineSoundPitchShifter will not run.")
+            return # self.running remains False
+        except Exception as e: # Catch other librosa load errors
+            log_error(f"Error loading audio file {self.audio_filepath}: {e}. EngineSoundPitchShifter will not run.")
+            return # self.running remains False
 
-            # Start the stream
+        try:
+            log_info("Initializing audio stream...")
+            self.stream = sd.OutputStream(
+                channels=1, # Assuming mono audio for engine sounds
+                samplerate=self.sample_rate,
+                callback=self.audio_callback
+            )
             self.stream.start()
-
+            self.running = True # Stream successfully started
+            self.playing = True # Start playing immediately after successful setup
+            log_info("Audio stream started successfully.")
+        except sd.PortAudioError as pae: # More specific exception for sounddevice issues
+            log_error(f"PortAudio error initializing audio stream: {pae}. Soundevice may not be configured correctly.")
+            self.stream = None # Ensure stream is None if it failed
+        except Exception as e:
+            log_error(f"Failed to initialize or start audio stream: {e}")
+            self.stream = None # Ensure stream is None if it failed
+        # If stream setup fails, self.running remains False
 
     def cleanup(self):
-        """ Stop the audio stream and release resources
-        """
-        if hasattr(self, 'stream') and self.stream.active:
-            self.stream.stop()
+        """Stops the audio stream, releases resources, and stops keyboard listener if active."""
+        log_info("Cleaning up EngineSoundPitchShifter resources...")
+        if hasattr(self, 'stream') and self.stream: # Check if stream exists
+            if self.stream.active:
+                log_info("Stopping audio stream...")
+                self.stream.stop()
+            log_info("Closing audio stream...")
             self.stream.close()
+        else:
+            log_info("Audio stream was not active or already cleaned up.")
 
         self.running = False
+        self.playing = False
+        log_info("Cleanup complete.")
 
+    def audio_callback(self, outdata: np.ndarray, frames: int, time, status):
+        """
+        Audio callback function called by sounddevice to provide audio data.
 
-    def audio_callback(self, outdata, frames, time, status):
-        if self.playing and self.currentFrame < len(self.audioTimeSeries):
-            # Get chunk of audio
-            chunk = self.audioTimeSeries[self.currentFrame:self.currentFrame + frames]
+        Args:
+            outdata (np.ndarray): Output buffer to fill with audio data.
+                                  Shape is (frames, channels).
+            frames (int): Number of frames to generate.
+            time: Timing information (not typically used for simple playback).
+            status: Stream status flags (e.g., for underflow/overflow).
+        """
+        if status:
+            log_warning(f"Audio callback status: {status}")
 
-            # Apply pitch shift
-            if len(chunk) > 0:
-                shifted = librosa.effects.pitch_shift(
-                    chunk,
-                    sr=self.sampleRate,
-                    n_steps=12 * np.log2(self.pitchFactor)
+        if self.playing and self.current_frame < len(self.audio_time_series):
+            remaining_frames = len(self.audio_time_series) - self.current_frame
+            chunk_size = min(frames, remaining_frames)
+
+            chunk = self.audio_time_series[self.current_frame : self.current_frame + chunk_size]
+
+            if chunk_size > 0:
+                # Apply pitch shift using librosa.
+                # n_steps: Number of semitones to shift. Positive values shift up, negative down.
+                # 12 * np.log2(pitchFactor) converts a pitch factor (e.g., 2.0 for one octave up)
+                # into the equivalent number of semitones.
+                shifted_chunk = librosa.effects.pitch_shift(
+                    y=chunk, # Renamed for clarity to match librosa docs
+                    sr=self.sample_rate,
+                    n_steps=12 * np.log2(self.pitch_factor)
                 )
 
-                # Ensure the output array is the right size
-                if len(shifted) < frames:
-                    shifted = np.pad(shifted, (0, frames - len(shifted)))
+                # Ensure the output array is the right size (frames, 1 channel)
+                # Pad if the shifted chunk is smaller than requested frames (e.g., if chunk_size < frames)
+                if len(shifted_chunk) < frames:
+                    # Pad with zeros at the end to fill the 'frames' requirement
+                    padding_size = frames - len(shifted_chunk)
+                    padded_shifted_chunk = np.pad(shifted_chunk, (0, padding_size), 'constant')
+                else:
+                    padded_shifted_chunk = shifted_chunk
 
-                outdata[:] = shifted.reshape(-1, 1)
-                self.currentFrame += frames
-            else:
+                outdata[:] = padded_shifted_chunk.reshape(-1, 1)
+                self.current_frame += chunk_size
+            else: # Should not happen if remaining_frames > 0 and chunk_size calculated correctly
                 outdata.fill(0)
-        else:
+        else: # Not playing or end of audio data
             outdata.fill(0)
+            if self.playing and self.current_frame >= len(self.audio_time_series):
+                # Optional: Loop audio by resetting current_frame, or stop playing
+                # log_info("Audio reached end, looping...")
+                # self.current_frame = 0
+                # For now, it just plays silence once audio ends.
+                self.playing = False # Stop playing after reaching the end
+                log_info("Audio playback finished.")
 
 
     def on_press(self, key):
-        global isWPressed, isEscPressed
-
+        """Handles key press events for controlling pitch."""
         try:
             if key.char.upper() == 'W':
-                isWPressed = True
-                print(" key pressed, revving engine up")
+                self.is_w_pressed = True
+                log_info("Gas pedal (W key) pressed - increasing pitch.")
         except AttributeError:
-            # Special key
-            pass
+            # Special keys (like Shift, Ctrl, etc.) don't have 'char' attribute
+            if key == keyboard.Key.esc: # Example for future use if is_esc_pressed is re-added
+                # self.is_esc_pressed = True
+                # log_info("Escape key pressed.")
+                pass
 
 
     def on_release(self, key):
-        global isWPressed, isEscPressed
-
+        """Handles key release events for controlling pitch."""
         try:
             if key.char.upper() == 'W':
-                isWPressed = False
-                print(" key released, engine revving down")
-
+                self.is_w_pressed = False
+                log_info("Gas pedal (W key) released - decreasing pitch.")
         except AttributeError:
-            # Special key
-            pass
-
+            # Special keys
+            if key == keyboard.Key.esc: # Example for future use if is_esc_pressed is re-added
+                # self.is_esc_pressed = False
+                pass
 
     def simulate_gas_pedal(self):
-        global isWPressed, isEscPressed
+        """Simulates gas pedal behavior by adjusting pitch_factor based on W key state."""
+        if self.is_w_pressed:
+            # Gradually increase pitch while W is held, up to a maximum of 2.0
+            self.pitch_factor = min(2.0, self.pitch_factor + 0.02)
+        else:
+            # Gradually return to normal pitch (1.0) when W is released
+            if self.pitch_factor > 1.0:
+                self.pitch_factor = max(1.0, self.pitch_factor - 0.02)
+        # log_debug(f"Pitch factor: {self.pitch_factor:.2f}") # Optional: for fine-tuning
 
-        while self.running:
-            # Simulate gas pedal with W key
-            if self.isWPressed:
-                # Gradually increase pitch while W is held
-                self.pitchFactor = min(2.0, self.pitchFactor + 0.02)
-            else:
-                # Gradually return to normal pitch when W is released
-                if self.pitchFactor > 1.0:
-                    self.pitchFactor = max(1.0, self.pitchFactor - 0.02)
-
-            sleep(0.01)  # Small 10 ms delay to prevent excessive CPU usage
-
-
-    def unit_test(self):
+    def run_simulation_loop(self):
         """
+        Main loop for running the pitch shifter simulation with keyboard control.
+        This method includes the keyboard listener setup and the simulation ticks.
         """
+        if not self.running:
+            log_warning("Audio stream not running. Cannot start simulation loop.")
+            return
+
+        # Setup keyboard listener
+        # The listener should run in a non-blocking way or this loop won't execute.
+        # pynput.keyboard.Listener is typically run in its own thread.
         listener = keyboard.Listener(on_press=self.on_press, on_release=self.on_release)
-        listener.start()
+        listener.start() # Starts the listener thread
+        log_info("Keyboard listener started. Press 'W' to simulate gas pedal. Press Ctrl+C in console to exit.")
 
-        while(True):
-            self.simulate_gas_pedal()
-
+        try:
+            while self.running: # Loop controlled by self.running state
+                self.simulate_gas_pedal()
+                sleep(0.01)  # Main simulation tick rate (10ms delay)
+        except KeyboardInterrupt:
+            log_info("KeyboardInterrupt received. Shutting down simulation loop.")
+        finally:
+            if listener.is_alive():
+                log_info("Stopping keyboard listener...")
+                listener.stop()
+                listener.join() # Wait for listener thread to finish
+            log_info("Keyboard listener stopped.")
+            self.cleanup() # Ensure cleanup is called when loop exits
 
 if __name__ == "__main__":
-    teslaModel3 = EngineSoundPitchShifter(GC.MC_LAREN_F1)
-    teslaModel3.unit_test()
-    teslaModel3.cleanup()
+    log_info("EngineSoundPitchShifter script started directly.")
+
+    # Using a standardized filename constant from GlobalConstants
+    # Ensure this file exists at GC.SOUNDS_BASE_PATH / GC.MCLAREN_F1_FILENAME
+    pitch_shifter = EngineSoundPitchShifter(GC.MCLAREN_F1_FILENAME)
+
+    if pitch_shifter.running:
+        pitch_shifter.run_simulation_loop() # This method now contains the main loop logic
+    else:
+        log_error("EngineSoundPitchShifter did not initialize correctly. Cannot run simulation.")
+
+    log_info("EngineSoundPitchShifter script finished.")
