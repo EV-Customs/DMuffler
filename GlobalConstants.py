@@ -180,7 +180,7 @@ VEHICLES_TABLE: int = 1
 ENGINE_SOUNDS_TABLE: int = 2
 
 DATABASE_OPERATION_FAILED: int = 400
-DATABASE_OPERATION_SUCCESFULL: int = 200 # Note: Typo "SUCCESFULL" corrected to "SUCCESSFUL"
+DATABASE_OPERATION_SUCCESSFUL: int = 200 # Note: Typo "SUCCESFULL" corrected to "SUCCESSFUL"
 
 # ==============================================================================
 # Dimensional Unit Constants
