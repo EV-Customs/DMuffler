@@ -31,46 +31,62 @@ from pytz import timezone                       # Sync data write time to databa
 import GlobalConstants as GC
 
 """
+Example of proper SQL table creation with foreign key constraints:
+
     conn = sqlite3.connect('DMufflerLocal.db')
     cursor = conn.cursor()
 
-    table = GC.DATABASE_TABLE_NAMES[GC.USERS_TABLE]
+    # Enable foreign key support
+    cursor.execute("PRAGMA foreign_keys = ON")
+
+    # Create vehicles table first (since it will be referenced by users)
+    table = GC.DATABASE_TABLE_NAMES[GC.VEHICLES_TABLE]
     cursor.execute(f"CREATE TABLE IF NOT EXISTS {table} (\
                      id INTEGER PRIMARY KEY AUTOINCREMENT,\
                      timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\
-                     first_name TEXT DEFAULT JOHN)")
+                     first_name TEXT DEFAULT 'JOHN',\
+                     vehicle_id INTEGER,
+                     FOREIGN KEY (vehicle_id) REFERENCES Vehicles(id)")
 
     table = GC.DATABASE_TABLE_NAMES[GC.VEHICLES_TABLE]
     cursor.execute(f"CREATE TABLE IF NOT EXISTS {table} (\
                      id INTEGER PRIMARY KEY AUTOINCREMENT,\
                      timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\
-                     vin TEXT DEFAULT 12345678901234567),\
-                     make TEXT DEFAULT TESLA,\
-                     model TEXT DEFAULT Y,\
-                     color TEXT DEFAULT RED")
+                     vin TEXT DEFAULT '12345678901234567'),\
+                     make TEXT DEFAULT 'Tesla',\
+                     model TEXT DEFAULT 'Model Y',\
+                     color TEXT DEFAULT 'E')
 
     table = GC.DATABASE_TABLE_NAMES[GC.ENGINE_SOUNDS]
     cursor.execute(f"CREATE TABLE IF NOT EXISTS {table} (\
                      id INTEGER PRIMARY KEY AUTOINCREMENT,\
                      timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\
-                     wav_filename TEXT DEFAULT MC_LAREN_F1)")
+                     wav_filename TEXT DEFAULT 'MC_LAREN_F1',\
+                     cost_in_cents INTEGER DEFAULT 0)")
 
     conn.commit()
 
-    # query = fINSERT INTO {GC.DATABASE_TABLE_NAMES[GC.VEHICLES_TABLE]} (timestamp, vin) VALUES (?, ?)
+    # Example of inserting a vehicle and linking it to a user
+    # First insert the vehicle
+    vehicle_query = f"INSERT INTO {GC.DATABASE_TABLE_NAMES[GC.VEHICLES_TABLE]} (vin, make, model, color) VALUES (?, ?, ?, ?)"
+    cursor.execute(vehicle_query, ('ABC123456789', 'TESLA', 'Model 3', 'Blue'))
+    vehicle_id = cursor.lastrowid
 
-    # cursor.execute(query, (now, vin))
-    # conn.commit()
+    # Then insert the user with a reference to the vehicle
+    user_query = f"INSERT INTO {GC.DATABASE_TABLE_NAMES[GC.USERS_TABLE]} (first_name, vehicle_id) VALUES (?, ?)"
+    cursor.execute(user_query, ('Alice', vehicle_id))
 
-    Common Table Constraints
-    - `PRIMARY KEY`: Uniquely identifies each record
-    - `AUTOINCREMENT`: Automatically increases value for new records
-    - `NOT NULL`: Column cannot contain NULL values
-    - `UNIQUE`: All values in column must be different
-    - `DEFAULT`: Provides a default value
-    - `CHECK`: Ensures values meet specified condition
-    - `FOREIGN KEY`: Links to primary key in another table
-    """
+    conn.commit()
+
+Common Table Constraints
+- `PRIMARY KEY`: Uniquely identifies each record
+- `AUTOINCREMENT`: Automatically increases value for new records
+- `NOT NULL`: Column cannot contain NULL values
+- `UNIQUE`: All values in column must be different
+- `DEFAULT`: Provides a default value
+- `CHECK`: Ensures values meet specified condition
+- `FOREIGN KEY`: Links to primary key in another table
+"""
 
 
 class Database:
@@ -82,10 +98,33 @@ class Database:
         self.conn = sqlite3.connect(dbName)
         self.cursor = self.conn.cursor()
 
-        # Create ? (?) tables in dbName.db to run DMuffler application without internet
-        self.cursor.execute(f'''CREATE TABLE IF NOT EXISTS {GC.DATABASE_TABLE_NAMES[GC.USERS_TABLE]} (id INTEGER PRIMARY KEY AUTOINCREMENT, first_name TEXT DEFAULT JOHN, timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
-        self.cursor.execute(f'''CREATE TABLE IF NOT EXISTS {GC.DATABASE_TABLE_NAMES[GC.VEHICLES_TABLE]}  (id INTEGER PRIMARY KEY, totalWeeklyWattHours INTEGER, currentCostPerWh REAL, weekNumber TEXT)''')
-        self.cursor.execute(f'''CREATE TABLE IF NOT EXISTS {GC.DATABASE_TABLE_NAMES[GC.ENGINE_SOUNDS_TABLE]} (id INTEGER PRIMARY KEY, filename TEXT, cost_in_cents INTEGER, timestamp TEXT)''')
+        # Enable foreign key support
+        self.cursor.execute("PRAGMA foreign_keys = ON")
+
+        # Create tables with proper relationships in dbName.db to run DMuffler application without internet
+        self.cursor.execute(f'''CREATE TABLE IF NOT EXISTS {GC.DATABASE_TABLE_NAMES[GC.VEHICLES_TABLE]} (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            vin TEXT DEFAULT '12345678901234567',
+            make TEXT DEFAULT 'TESLA',
+            model TEXT DEFAULT 'Y',
+            color TEXT DEFAULT 'RED'
+        )''')
+
+        self.cursor.execute(f'''CREATE TABLE IF NOT EXISTS {GC.DATABASE_TABLE_NAMES[GC.USERS_TABLE]} (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            first_name TEXT DEFAULT 'JOHN',
+            vehicle_id INTEGER,
+            FOREIGN KEY (vehicle_id) REFERENCES {GC.DATABASE_TABLE_NAMES[GC.VEHICLES_TABLE]}(id)
+        )''')
+
+        self.cursor.execute(f'''CREATE TABLE IF NOT EXISTS {GC.DATABASE_TABLE_NAMES[GC.ENGINE_SOUNDS_TABLE]} (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            filename TEXT DEFAULT 'MC_LAREN_F1',
+            cost_in_cents INTEGER DEFAULT 0
+        )''')
 
         # Create debuging logg
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS DebugLoggingTable (id INTEGER PRIMARY KEY, logMessage TEXT)''')
@@ -98,12 +137,16 @@ class Database:
 
 
     def setup_engine_sounds_tables(self):
-        """ Prepopulate EngineSoundTable 6 free engine sounds
-
+        """ Prepopulate EngineSoundTable with free engine sounds from VEHICLE_ASSETS
         """
-        for baseAudioFilename in GC.EngineSoundsDict:
-            now = datetime.now().isoformat() #2025-01-30T13:13:13.123456
-            self.insert_engine_sounds_table(baseAudioFilename, 0, now)
+        try:
+            # Use VEHICLE_ASSETS to populate the engine sounds table
+            for asset in GC.VEHICLE_ASSETS:
+                now = datetime.now().isoformat() #2025-01-30T13:13:13.123456
+                # Use the engineSoundID as the filename identifier
+                self.insert_engine_sounds_table(asset.sound, 0, now)
+        except Exception as e:
+            print(f"Error in setup_engine_sounds_tables: {e}")
 
 
     def insert_engine_sounds_table(self, baseAudioFilename: str, cost: int, now: str):
@@ -111,6 +154,8 @@ class Database:
 
         Args:
             baseAudioFilename (str): CONSTANT from GlobalConstants.py
+            cost (int): Cost of the engine sound in cents (0 for free sounds)
+            now (str): Timestamp string for this record
 
         Returns:
             int: Database index id of last row inserted
@@ -121,14 +166,22 @@ class Database:
         if GC.DEBUG_STATEMENTS_ON: print(f"Tuple returned was: {(results, isEmpty, isValid)}")
 
         try:
-            if results:
-                idPrimaryKeyToUpdate = results[0][2]
-                self.cursor.execute("UPDATE EngineSoundsTable SET baseAudioFilename = ? WHERE id = ?", (baseAudioFilename, idPrimaryKeyToUpdate))
-            else:
-                self.cursor.execute("INSERT INTO EngineSoundsTable (filename, cost_in_cents, timestamp) VALUES (?, ?, ?)", (baseAudioFilename, cost, now))
+            # Get the table name from constants
+            table_name = GC.DATABASE_TABLE_NAMES[GC.ENGINE_SOUNDS_TABLE]
 
-        except TypeError:
-            print("Error occured while inserting data...")
+            if results:
+                # If record exists, update it
+                # First element in result tuple is the ID (based on our SELECT in get_engine_sounds)
+                idPrimaryKeyToUpdate = results[0][0]
+                self.cursor.execute(f"UPDATE {table_name} SET filename = ?, cost_in_cents = ? WHERE id = ?",
+                                   (baseAudioFilename, cost, idPrimaryKeyToUpdate))
+            else:
+                # If no record exists, insert a new one
+                self.cursor.execute(f"INSERT INTO {table_name} (filename, cost_in_cents, timestamp) VALUES (?, ?, ?)",
+                                   (baseAudioFilename, cost, now))
+
+        except TypeError as e:
+            print(f"Error occurred while inserting data: {e}")
 
         lastDatabaseIndexInserted = self.cursor.lastrowid
 
@@ -138,55 +191,50 @@ class Database:
 
 
     def get_engine_sounds(self, baseAudioFilename:str):
-        """ Get filename from EngineSoundsTable SQLite table
+        """ Get engine sound record from ENGINE_SOUNDS_TABLE using the filename
 
         Args:
-            baseAudioFilename (str): See EngineSoundsDict in GlobalConstants.py
+            baseAudioFilename (str): Filename of the engine sound to look up
 
         Returns:
-            tuple: Tuple of results, isEmpty, isValid
+            tuple: Tuple of (results, isEmpty, isValid)
+                - results: List of matching records as tuples
+                - isEmpty: True if no matching records found
+                - isValid: True if query executed successfully
         """
         isEmpty = False
         isValid = True
 
-
         try:
-            if delta < 7:
-                sql_query = """
-                    SELECT timestamp, totalDailyWattHours, id
-                    FROM DailyEnergyTable
-                    WHERE id >= (SELECT id FROM DailyEnergyTable WHERE timestamp = ?)
-                    AND id <= (SELECT id FROM DailyEnergyTable WHERE timestamp = ?)
-                """
+            # Use the correct table name from GlobalConstants
+            table_name = GC.DATABASE_TABLE_NAMES[GC.ENGINE_SOUNDS_TABLE]
 
-                self.cursor.execute(sql_query, (baseAudioFilename,))
-                result = self.cursor.fetchall()
-                if len(result) == 0:
-                    isEmpty = True
-                    print("Got no results!")
-                return result, isEmpty, isValid
-            else:
-                sql_query = """
-                    SELECT *
-                    FROM EngineSoundsTable
-                    WHERE baseAudioFilename = baseAudioFilename
-                    AND id <= (SELECT id FROM DailyEnergyTable WHERE timestamp = ?)+6
-                """
+            # Search by filename
+            sql_query = f"""
+                SELECT id, timestamp, filename, cost_in_cents
+                FROM {table_name}
+                WHERE filename = ?
+            """
 
-                self.cursor.execute(sql_query, (start_date,start_date))
-                result = self.cursor.fetchall()
-                if len(result) == 0:
-                    isEmpty = True
-                    print("Got no results!")
+            self.cursor.execute(sql_query, (baseAudioFilename,))
+            result = self.cursor.fetchall()
 
-                return result, isEmpty, isValid
+            # Check if any results were found
+            if len(result) == 0:
+                isEmpty = True
+                if GC.DEBUG_STATEMENTS_ON:
+                    print(f"No engine sound found with filename: {baseAudioFilename}")
 
-        except IndexError:
-            if GC.DEBUG_STATEMENTS_ON: self.insert_debug_logging_table("INSIDE INDEX ERROR")
+            return result, isEmpty, isValid
+
+        except IndexError as e:
+            if GC.DEBUG_STATEMENTS_ON:
+                self.insert_debug_logging_table(GC.ERROR_LEVEL_LOG, f"Index error in get_engine_sounds: {str(e)}")
             return None, None, False
 
-        except sqlite3.OperationalError:
-            if GC.DEBUG_STATEMENTS_ON: self.insert_debug_logging_table(f"INSIDE OPERATIONAL ERROR")
+        except sqlite3.OperationalError as e:
+            if GC.DEBUG_STATEMENTS_ON:
+                self.insert_debug_logging_table(GC.ERROR_LEVEL_LOG, f"SQL error in get_engine_sounds: {str(e)}")
             return None, None, False
 
 
@@ -222,18 +270,26 @@ class Database:
         return now
 
 
-    def insert_debug_logging_table(self, logLevel: int, debugText: str):
+    def insert_debug_logging_table(self, logLevel=None, debugText=None):
         """ Insert debugging text in database for later review
 
         Args:
-            debugText (str): "ERROR: " or "WARNING: " + text message to log
+            logLevel (int, optional): Error level (GC.ERROR_LEVEL_LOG or GC.WARNING_LEVEL_LOG)
+            debugText (str, optional): Text message to log
         """
-        if logLevel == GC.ERROR_LEVEL_LOG:
-            debugText = "ERROR: " + debugText
-        elif logLevel == GC.WARNING_LEVEL_LOG:
-            debugText = "WARNING: " + debugText
+        # Handle both old and new function signature
+        if debugText is None and logLevel is not None:
+            # Old usage: single parameter is the debug text
+            debugText = str(logLevel)
+            logLevel = None
 
-        self.cursor.execute("INSERT INTO DebugLoggingTable (logMessage) VALUES (?)", (debugText,))
+        message = debugText
+        if logLevel == GC.ERROR_LEVEL_LOG:
+            message = "ERROR: " + message
+        elif logLevel == GC.WARNING_LEVEL_LOG:
+            message = "WARNING: " + message
+
+        self.cursor.execute("INSERT INTO DebugLoggingTable (logMessage) VALUES (?)", (message,))
         self.commit_changes()
 
 
@@ -281,11 +337,11 @@ class Database:
                     return result[row-1][column], isEmpty, isValid
 
         except IndexError:
-            if GC.DEBUG_STATEMENTS_ON: self.insert_debug_logging_table("INSIDE INDEX ERROR")
+            if GC.DEBUG_STATEMENTS_ON: self.insert_debug_logging_table(GC.ERROR_LEVEL_LOG, "INSIDE INDEX ERROR")
             return None, None, False
 
         except sqlite3.OperationalError:
-            if GC.DEBUG_STATEMENTS_ON: self.insert_debug_logging_table(f"INSIDE OPERATIONAL ERROR")
+            if GC.DEBUG_STATEMENTS_ON: self.insert_debug_logging_table(GC.ERROR_LEVEL_LOG, "INSIDE OPERATIONAL ERROR")
             return None, None, False
 
 
@@ -304,6 +360,44 @@ if __name__ == "__main__":
     print("Testing DMuffler Database.py")
 
     db = Database("TestDMuffler.db")
+
+    # Example of adding a vehicle and linking it to a user
+    try:
+        # First add a vehicle - using proper string constant instead of a set
+        vehicle_table = GC.DATABASE_TABLE_NAMES[GC.VEHICLES_TABLE]
+        db.cursor.execute(f"INSERT INTO {vehicle_table} (vin, make, model, color) VALUES (?, ?, ?, ?)",
+                         ('12345678901234567', 'TESLA', 'Model Y', 'Black'))
+        vehicleId = db.cursor.lastrowid
+
+        # Then add a user with reference to the vehicle
+        db.cursor.execute(f"INSERT INTO {GC.DATABASE_TABLE_NAMES[GC.USERS_TABLE]} (first_name, vehicle_id) VALUES (?, ?)",
+                         ('Alice', vehicleId))
+
+        # Commit the changes
+        db.commit_changes()
+
+        # Add a user with reference to the vehicle
+        user_table = GC.DATABASE_TABLE_NAMES[GC.USERS_TABLE]
+        db.cursor.execute(f"INSERT INTO {user_table} (first_name, vehicle_id) VALUES (?, ?)",
+                         ('Alice', vehicleId))
+
+        # Query the relationship
+        db.cursor.execute(f"""
+            SELECT u.first_name, v.make, v.model
+            FROM {user_table} u
+            JOIN {vehicle_table} v ON u.vehicle_id = v.id
+        """)
+
+        # Query to verify insertion
+        db.cursor.execute(f"SELECT * FROM {vehicle_table} WHERE vin = ?", ('12345678901234567',))
+        results = db.cursor.fetchall()
+        if GC.DEBUG_STATEMENTS_ON:
+            print("Vehicle Inserted:")
+            for result in results:
+                print(f"ID: {result[0]}, VIN: {result[2]}, Make: {result[3]}, Model: {result[4]}, Color: {result[5]}")
+
+    except sqlite3.Error as e:
+        print(f"Database error: {e}")
 
     """
     db.example_tables()
@@ -326,6 +420,5 @@ if __name__ == "__main__":
     print(insertErrors)
     checkOutErrors = db.insert_check_out_table(1001)
     print(insertErrors)
-    """
-
+"""
     db.close_database()
