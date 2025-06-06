@@ -78,33 +78,44 @@ class EngineSoundPitchShifter:
         self.playing = False
         self.currentFrame = 0
         self.pitchFactor = 1.0
+        self.stream = None  # Initialize stream to None
+        self.running = True # Assume running unless setup fails catastrophically
 
         # Setup audio stream using sounddevice library
         try:
             self.stream = sd.OutputStream(channels=1, samplerate=self.sampleRate, callback=self.audio_callback)
-        except NameError:
-            peek("Sounddevice object is not defined", color="red")
-        else:
             self.stream.start()
-        finally:
-            self.running = True
-
-            # Start the stream
-            self.stream.start()
+            print("EngineSoundPitchShifter: Audio stream started.")
+        except sd.PortAudioError as pae:
+            # This error occurs if no audio device is found (common in CI/sandbox)
+            print(f"EngineSoundPitchShifter: PortAudioError initializing stream (expected in some environments): {pae}")
+            # self.stream remains None, playback will not be possible.
+            # self.running can remain true, as other logic might not depend on the stream.
+        except NameError: # This was the original except, for sd not being defined
+            print("EngineSoundPitchShifter: Sounddevice object (sd) is not defined.")
+            self.running = False # If sd is not defined, critical failure.
+        except Exception as e:
+            print(f"EngineSoundPitchShifter: An unexpected error occurred during audio stream setup: {e}")
+            self.running = False # Unexpected error, probably critical.
 
 
     def cleanup(self):
         """ Stop the audio stream and release resources
         """
-        if hasattr(self, 'stream') and self.stream.active:
+        if hasattr(self, 'stream') and self.stream is not None and self.stream.active:
             self.stream.stop()
             self.stream.close()
-
+            print("EngineSoundPitchShifter: Audio stream stopped and closed.")
+        else:
+            print("EngineSoundPitchShifter: No active audio stream to cleanup or stream was not initialized.")
         self.running = False
 
 
     def audio_callback(self, outdata, frames, time, status):
-        if self.playing and self.currentFrame < len(self.audioTimeSeries):
+        if status:
+            print(f"EngineSoundPitchShifter: Audio callback status: {status}")
+
+        if self.playing and self.currentFrame < len(self.audioTimeSeries) and self.stream is not None:
             # Get chunk of audio
             chunk = self.audioTimeSeries[self.currentFrame:self.currentFrame + frames]
 
